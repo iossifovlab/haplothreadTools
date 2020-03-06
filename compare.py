@@ -10,7 +10,7 @@ from time import time
 L = 10000000
 # L = 1000
 if len(sys.argv) <3:
-    print "Usage: compare.py <hdb1> <hdb2>"
+    print("Usage: compare.py <hdb1> <hdb2>")
     sys.exit(1)
 
 
@@ -26,7 +26,7 @@ def load_htdb(hdbName):
         F.readline()
         for l in F:
             ch,ps,rf,A,C,G,T = l.strip('\n\r').split('\t')
-            ps,A,C,G,T = map(int,[ps,A,C,G,T])
+            ps,A,C,G,T = list(map(int,[ps,A,C,G,T]))
             PSs.append((ch,ps,rf,A,C,G,T))
     with open(hdbName + '-hpth.txt', 'r') as F:
         F.readline()
@@ -95,7 +95,7 @@ for p in range(0,len(HTs1[0][3])):
         n_p,n,M = match(revCmpV(c1),c2)
 
     TT.append((PSs1[p][:2],n_p,M+n))
-    print "\t".join(map(str,[PSs1[p][0],PSs1[p][1],n_p,n,M+n,flp]))
+    print("\t".join(map(str,[PSs1[p][0],PSs1[p][1],n_p,n,M+n,flp])))
     # if n_p > 0.01:
     # if n_p > 0.003 and n_p < 0.01:
     #     nBad +=1 

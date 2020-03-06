@@ -3,13 +3,13 @@
 import sys, os
 
 if len(sys.argv) < 3:
-    print "Usage: convertBim.py <old bim> <helper file>"
+    print("Usage: convertBim.py <old bim> <helper file>")
     exit()
 
 bimFn = sys.argv[1]
-print >>sys.stderr,  bimFn
+print(bimFn, file=sys.stderr)
 helpFn = sys.argv[2]
-print >>sys.stderr,  helpFn
+print(helpFn, file=sys.stderr)
 
 bim = []
 n = 0
@@ -34,14 +34,14 @@ for i in range(len(bim)):
                     helper[snpId][1],
                     helper[snpId][4],
                     helper[snpId][3]])
-        print >>sys.stderr, bim[i], helper[snpId][4], helper[snpId][3]
+        print(bim[i], helper[snpId][4], helper[snpId][3], file=sys.stderr)
         
     else:
         out.append(bim[i])
         out[i][3] = -1
         out[i][0] = 'chr'+out[i][0]
 for i in range(len(out)):
-    print '\t'.join(map(str, out[i]))
+    print('\t'.join(map(str, out[i])))
     
 
 

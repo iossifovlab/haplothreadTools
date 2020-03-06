@@ -52,7 +52,7 @@ for l in PF:
         else:
             CNT += processP(P)
         P = []
-        print >>sys.stderr, "n", n
+        print("n", n, file=sys.stderr)
     #if n == 2300:
     #    break
 

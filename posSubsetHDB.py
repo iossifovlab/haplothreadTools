@@ -93,7 +93,7 @@ def posRegionSubset(IHDB, OHDB, ch, B, E):
     for l in IP:
         cs = l.strip("\n\r").split("\t")
         if not cs[0] == ch:
-            print "Wrong chromosome for IHDB: " + cs[0] + "!=" + ch 
+            print("Wrong chromosome for IHDB: " + cs[0] + "!=" + ch) 
             exit(1)
         n+=1
         if int(cs[1])<B:
@@ -130,7 +130,7 @@ def posPositionsSubset(IHDB, OHDB, pos):
     # the commentd code assumed sorted pos,
     # this may not be the case with mapping to the new reference
     # so I change this code
-    print >>sys.stderr, "len(pos): ",len(pos)
+    print("len(pos): ",len(pos), file=sys.stderr)
     """
     indx = []
     OP = open(OHDB+"-pos.txt","w")
@@ -166,7 +166,7 @@ def posPositionsSubset(IHDB, OHDB, pos):
         indx.append(ipos[str(p)][0])
     IP.close()
     OP.close()
-    print >>sys.stderr, "len(indx): ",len(indx)
+    print("len(indx): ",len(indx), file=sys.stderr)
         
     OH = open(OHDB+"-hpth.txt","w")
     IH = gzip.open(IHDB+"-hpth.txt.gz")
@@ -186,7 +186,7 @@ def posMapSubset(IHDB, OHDB, maps):
     # maps has hg38 in the first column (sorted)
     # hg19 is in the second column
 
-    print >>sys.stderr, "len(maps): ",len(maps)
+    print("len(maps): ",len(maps), file=sys.stderr)
     indx = []
     # the key will be hg19
     MAPS = {v[1]:v[0] for v in maps}
@@ -201,7 +201,7 @@ def posMapSubset(IHDB, OHDB, maps):
         indx.append(ipos[p][0])
     IP.close()
     OP.close()
-    print >>sys.stderr, "len(indx): ",len(indx)
+    print("len(indx): ",len(indx), file=sys.stderr)
         
     OH = open(OHDB+"-hpth.txt","w")
     IH = gzip.open(IHDB+"-hpth.txt.gz")
@@ -233,7 +233,7 @@ def posBedFileSubset(IHDB, OHDB, bedFile):
     for l in IP:
         cs = l.strip("\n\r").split("\t")
         if not cs[0] == bed[k][0]:
-            print "Wrong chromosome for IHDB: " + cs[0] + "!=" + ch 
+            print("Wrong chromosome for IHDB: " + cs[0] + "!=" + ch) 
             exit(1)
         n+=1
         if int(cs[1])<B:
@@ -296,7 +296,7 @@ def posChrPosFileSubset(IHDB, OHDB, chrPosFile):
     elif os.path.isfile(IHDB+"-hpth.txt"):
         IH = open(IHDB+"-hpth.txt")
     else:
-        print >>sys.stderr, "Cannot open file", IHDB+"-hpth.txt*"
+        print("Cannot open file", IHDB+"-hpth.txt*", file=sys.stderr)
 
     OH.write(IH.readline())
 
@@ -317,7 +317,7 @@ def posMinAltAFreqSubset(IHDB, OHDB, minAltAFreq):
     for l in IP:
         cs = l.strip("\n\r").split("\t")
         n+=1
-        cnts = map(float, cs[3:])
+        cnts = list(map(float, cs[3:]))
         total = sum(cnts)
         altAFreq = 0
         if total > 0:
@@ -351,7 +351,7 @@ def posMaxAltAFreqSubset(IHDB, OHDB, maxAltAFreq):
     for l in IP:
         cs = l.strip("\n\r").split("\t")
         n+=1
-        cnts = map(float, cs[3:])
+        cnts = list(map(float, cs[3:]))
         total = sum(cnts)
         altAFreq = 0
         if total > 0:
@@ -385,7 +385,7 @@ def posUltraRareSubset(IHDB, OHDB):
     for l in IP:
         cs = l.strip("\n\r").split("\t")
         n+=1
-        cnts = map(float, cs[3:])
+        cnts = list(map(float, cs[3:]))
         total = sum(cnts)
         altAFreq = 0
         if total > 0:
@@ -416,7 +416,7 @@ def posNucFamIdsSubset(IHDB, OHDB, famIds):
     elif os.path.isfile(IHDB+"-hpth.txt"):
         IH = open(IHDB+"-hpth.txt")
     else:
-        print >>sys.stderr, "Cannot open file", IHDB+"-hpth.txt*"
+        print("Cannot open file", IHDB+"-hpth.txt*", file=sys.stderr)
 
     OH.write(IH.readline())
     st = True
@@ -451,7 +451,7 @@ def posNucFamIdsSubset(IHDB, OHDB, famIds):
     for l in IP:
         cs = l.strip("\n\r").split("\t")
         n+=1
-        OP.write('\t'.join(cs[:3] + map(str, counts[n,:])) + '\n')
+        OP.write('\t'.join(cs[:3] + list(map(str, counts[n,:]))) + '\n')
     IP.close()
     OP.close()
 
@@ -462,7 +462,7 @@ def posChildIdsSubset(IHDB, OHDB, childIds):
     elif os.path.isfile(IHDB+"-hpth.txt"):
         IH = open(IHDB+"-hpth.txt")
     else:
-        print >>sys.stderr, "Cannot open file", IHDB+"-hpth.txt*"
+        print("Cannot open file", IHDB+"-hpth.txt*", file=sys.stderr)
 
     OH.write(IH.readline())
     st = True
@@ -497,7 +497,7 @@ def posChildIdsSubset(IHDB, OHDB, childIds):
     for l in IP:
         cs = l.strip("\n\r").split("\t")
         n+=1
-        OP.write('\t'.join(cs[:3] + map(str, counts[n,:])) + '\n')
+        OP.write('\t'.join(cs[:3] + list(map(str, counts[n,:]))) + '\n')
     IP.close()
     OP.close()
 
@@ -540,7 +540,7 @@ def posHaploThreadSubset(IHDB, OHDB, haplothread):
     for l in IP:
         cs = l.strip("\n\r").split("\t")
         n+=1
-        OP.write('\t'.join(cs[:3] + map(str, counts[n,:])) + '\n')
+        OP.write('\t'.join(cs[:3] + list(map(str, counts[n,:]))) + '\n')
     IP.close()
     OP.close()
 
@@ -604,8 +604,8 @@ def main():
              metavar="haploThread", help="comma separated sublist of MT,MNT,FT,FNT" )
 
     args = parser.parse_args()
-    print args.IHDB
-    print args.OHDB
+    print(args.IHDB)
+    print(args.OHDB)
     #print args.indexPos
 
     #if args.region == None and args.indexPos == None:
@@ -635,7 +635,7 @@ def main():
                 positions.append(int(l.strip("\n\r")))
             F.close()
         else:
-            print "file does not exist: |" + args.positions + "|"
+            print("file does not exist: |" + args.positions + "|")
             exit(1)
         posPositionsSubset(args.IHDB, args.OHDB, positions)
 
@@ -644,7 +644,7 @@ def main():
             with open(args.maps,"r") as F:
                 maps = [l.strip("\n\r").split("\t") for l in F]
         else:
-            print "file does not exist: |" + args.positions + "|"
+            print("file does not exist: |" + args.positions + "|")
             exit(1)
         posMapSubset(args.IHDB, args.OHDB, maps)
         
@@ -673,7 +673,7 @@ def main():
                 famIds.append(l.strip("\n\r"))
             F.close()
         else:
-            print "file does not exist: |" + args.nucFamIds + "|"
+            print("file does not exist: |" + args.nucFamIds + "|")
             exit(1)
         posNucFamIdsSubset(args.IHDB, args.OHDB, famIds)
                 
@@ -689,25 +689,25 @@ def main():
                 childIds.append(l.strip("\n\r"))
             F.close()
         else:
-            print "file does not exist: |" + args.childIds + "|"
+            print("file does not exist: |" + args.childIds + "|")
             exit(1)
         posChildIdsSubset(args.IHDB, args.OHDB, childIds)
 
     if args.phenotype:
         if not ":" in args.phenotype:
-            print "malformed phenotype: should be project_dir:prb or project_dir:sib"
+            print("malformed phenotype: should be project_dir:prb or project_dir:sib")
             exit(1)
         project, phenotype = args.phenotype.split(":")
         if not phenotype in ["prb", "sib"]:
-            print "invalid phenotype tipe, should be 'prb' or 'sib': " + "|" + phenotype + "|"
+            print("invalid phenotype tipe, should be 'prb' or 'sib': " + "|" + phenotype + "|")
             exit(1)
         md = load_meta_data(project + "/metaData.txt")
-        childIds =  [member.personId for fam in md.nucFams.values() for member in fam.memberInOrder[2:] if member.role == phenotype]
+        childIds =  [member.personId for fam in list(md.nucFams.values()) for member in fam.memberInOrder[2:] if member.role == phenotype]
         posChildIdsSubset(args.IHDB, args.OHDB, childIds)
 
     if args.haploThread:
         if not args.haploThread in "MT,MNT,FT,FNT":
-            print "haploThread should be on of 'MT,MNT,FT,FNT'" + "|" + args.haploThread + "|"
+            print("haploThread should be on of 'MT,MNT,FT,FNT'" + "|" + args.haploThread + "|")
             exit(1)
         posHaploThreadSubset(args.IHDB, args.OHDB, args.haploThread)                
 

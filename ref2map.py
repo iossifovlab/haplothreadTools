@@ -3,7 +3,7 @@ import sys, os
 from GenomeAccess import openRef
 
 if len(sys.argv) < 3:
-    print "Usage: ref2map.py <map file> <reference file>"
+    print("Usage: ref2map.py <map file> <reference file>")
     sys.exit(1)
 
 sep="\t"
@@ -19,9 +19,9 @@ with open(mapFn, 'r') as f:
         ch = 'chr'+cs[0]
         p = cs[3]
         refA = GA.getSequence(ch, int(p),int(p)) if ch in chrM else ''
-        print "\t".join(cs + [refA])
+        print("\t".join(cs + [refA]))
 
-print >>sys.stderr, "Read chip.map"
+print("Read chip.map", file=sys.stderr)
 
 
 

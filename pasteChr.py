@@ -8,13 +8,13 @@ from time import time
 # ht chrom parts are files produced by "cut -f 6- hdb|tail -n +2"
 
 if len(sys.argv) < 3:
-    print "Usage: pasteChr.py <ht parts of chroms> <hdb out>"
+    print("Usage: pasteChr.py <ht parts of chroms> <hdb out>")
     sys.exit(1)
 
-print [sys.argv[i] for i in range(1,len(sys.argv)-1)]
+print([sys.argv[i] for i in range(1,len(sys.argv)-1)])
 
 files = [open(sys.argv[i], 'r') for i  in range(1,len(sys.argv)-1)]
-print sys.argv[-1]
+print(sys.argv[-1])
 
 out = open(sys.argv[-1], 'w')
 
@@ -39,4 +39,4 @@ out.close()
 for f in files:
     f.close()
     
-print >>sys.stderr, "Done"
+print("Done", file=sys.stderr)

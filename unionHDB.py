@@ -8,7 +8,7 @@ posFiles = []
 hpthFiles = []
 
 if len(sys.argv) < 3:
-    print "Usage: unionHDB.py HDB_1 .. HDB_n  UHDB"
+    print("Usage: unionHDB.py HDB_1 .. HDB_n  UHDB")
     sys.exit(1)
 
 if len(sys.argv)==3:
@@ -17,7 +17,7 @@ if len(sys.argv)==3:
     hpthFiles = sorted(glob(sys.argv[1] + '/*-hpth.txt'))
 else:
     for line in sys.argv[1:-1]:
-        print line
+        print(line)
         line = line.strip()
         posFiles.append(line + '-pos.txt')
         hpthFiles.append(line + '-hpth.txt')
@@ -28,11 +28,11 @@ st = time()
 out = open(UHDB + '-hpth.txt', 'w')
 out.write('\t'.join('Family childId haplothreadId Haplothread'.split(' ')) + '\n')
 for f in hpthFiles:
-    print f
+    print(f)
     with open(f, 'r') as F:
         F.readline()
         for line in F:
             out.write(line)
-        print >>sys.stderr, f, (time() - st)
+        print(f, (time() - st), file=sys.stderr)
 out.close()
 

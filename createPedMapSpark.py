@@ -4,7 +4,7 @@ from collections import defaultdict, Counter
 import pickle
 
 if len(sys.argv) < 2:
-    print "Usage: createPedMap.py <ped file>"
+    print("Usage: createPedMap.py <ped file>")
     exit()
 
 pedFn=sys.argv[1]
@@ -36,7 +36,7 @@ with open(pedFn, 'r') as f:
         cs = l.strip('\n\r').split(' ')
         if cs[1] in md:
             out=md[cs[1]]
-            print '\t'.join(map(str,[out[k] for k in H ])+cs[6:])
+            print('\t'.join(list(map(str,[out[k] for k in H ]))+cs[6:]))
     
 
  

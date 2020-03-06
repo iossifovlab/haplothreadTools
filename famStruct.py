@@ -10,7 +10,7 @@ from famSummary import *
 #quadsFn = 'multiplex.txt'
 
 if len(sys.argv) <2:
-    print "Usage: famStruct.py <file with the list of families>"
+    print("Usage: famStruct.py <file with the list of families>")
     exit()
 
 famType = sys.argv[1]
@@ -21,7 +21,7 @@ elif famType == 'T':
 elif famType == 'M':
     fams = multiplex
 else:
-    print "wrong famType", famType, "should be on of Q, T, M"
+    print("wrong famType", famType, "should be on of Q, T, M")
     exit()
 
 #with open(quadsFn, 'r') as f:
@@ -51,7 +51,7 @@ for f in fams:
             pId = p[1]+'.s' + str(famCnt[f]['sib'])
         persons[p[0]] = [p[0], p[1], pId,GEN[p[4]]]
 
-for p,v in sorted(persons.items(), key=lambda x: [x[1][1],x[1][2]]):
-    print '\t'.join(persons[p])
+for p,v in sorted(list(persons.items()), key=lambda x: [x[1][1],x[1][2]]):
+    print('\t'.join(persons[p]))
 
 

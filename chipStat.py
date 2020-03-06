@@ -8,17 +8,17 @@ import scipy.stats as sc
 from hw import HW1
 
 if len(sys.argv) < 3:
-    print "Usage: chipStat.py <ped file> <map file>"
+    print("Usage: chipStat.py <ped file> <map file>")
     exit()
 
 pedFn = sys.argv[1]
-print >>sys.stderr,  pedFn
+print(pedFn, file=sys.stderr)
 mapFn = sys.argv[2]
-print >>sys.stderr,  mapFn
+print(mapFn, file=sys.stderr)
 #sscPosFn = sys.argv[3]
 #print >>sys.stderr, sscPosFn
 chunkN = pedFn.split("/")[1].split(".")[0]
-print >>sys.stderr,  chunkN
+print(chunkN, file=sys.stderr)
 
 """
 chr  
@@ -57,7 +57,7 @@ cur_fam = None
 FAM = {}
 famN = 0
 CompM = {x:y for x,y in zip(list('ACGT0ID'),list('TGCA0ID'))}
-chrM = {'chr'+str(v):i+1 for i,v in enumerate(range(1,23) + ['X'])}
+chrM = {'chr'+str(v):i+1 for i,v in enumerate(list(range(1,23)) + ['X'])}
 snpDict = defaultdict()
 st = time()
 with open(mapFn, 'r') as f:
@@ -69,7 +69,7 @@ with open(mapFn, 'r') as f:
         snpMap.append(cs)
         snpDict[(ch,p)] = 1
         n +=1
-print >>sys.stderr, "Read chip.map", time() - st
+print("Read chip.map", time() - st, file=sys.stderr)
 
 """
 sscPos = {}
@@ -99,7 +99,7 @@ class P():
     pass
 
 def processFam(fams):
-    for fid, fam in fams.items():
+    for fid, fam in list(fams.items()):
         mom = None
         dade = None
         if len(fam) <3:
@@ -160,16 +160,16 @@ with open(pedFn, 'r') as f:
         #print >>sys.stderr, fId, pId
         if cur_fam and fId != cur_fam:
             #print 'A'
-            print >>sys.stderr, 'processing family', cur_fam
+            print('processing family', cur_fam, file=sys.stderr)
             if processFam(fams):
                 statFam(fams)
             else:
-                print >>sys.stderr, "strange family", str(fams)
+                print("strange family", str(fams), file=sys.stderr)
             FAM = {}
             fams = defaultdict(list)
             if n % 100 == 0:
-                print >>sys.stderr, "memory", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss, "time", time() -st , "sec"
-                print >>sys.stderr, "time", time() -st , "sec"
+                print("memory", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss, "time", time() -st , "sec", file=sys.stderr)
+                print("time", time() -st , "sec", file=sys.stderr)
         #print 'B'
         cur_fam = fId
         fams[fId].append([fId, pId, faId, moId, sex, aff])
@@ -180,11 +180,11 @@ with open(pedFn, 'r') as f:
         #    break
 
 # process the last family
-print >>sys.stderr, 'last family', cur_fam
+print('last family', cur_fam, file=sys.stderr)
 if processFam(fams):
     statFam(fams)
 else:
-    print sys.stderr, "strange family", str(fams)
+    print(sys.stderr, "strange family", str(fams))
 
 statsP = GGP
 statsC = GGC
@@ -201,7 +201,7 @@ def alleles(sP, sC, k):
     basesP = [item for sublist in sP for item in sublist]
     c = {x:sum([sP[y]*2 if (x,x) == y else sP[y]
                 for y in sP if x in y]) for x in basesP}
-    d = sorted(c.items(), key=lambda x: x[1], reverse=True)
+    d = sorted(list(c.items()), key=lambda x: x[1], reverse=True)
     d = [x for x in d if x[0] != '0']
     if len(d) ==0:
         return ['0', '0', N*2, 0, 0, N*2, 0, 0, N*4, 0,0,0]
@@ -217,7 +217,7 @@ def alleles(sP, sC, k):
         basesC = [item for sublist in sC for item in sublist]        
         c = {x:sum([sC[y]*2 if (x,x) == y else sC[y] for y in sC if x in y])
              for x in basesC}
-        d = sorted(c.items(), key=lambda x: x[1], reverse=True)
+        d = sorted(list(c.items()), key=lambda x: x[1], reverse=True)
         #print >>sys.stderr, '\t'.join(map(str,[MAP[k][0],MAP[k][1],
         #                                 'parents', sP, 'children', sC, d]))
         d = [x for x in d if x[0] != '0']
@@ -225,7 +225,7 @@ def alleles(sP, sC, k):
         if len(d) > 1:
             minorA = d[1][0]
         if len(d) > 2:
-            print >>sys.stderr, "Strange", d
+            print("Strange", d, file=sys.stderr)
     
     keys = [[(majorA, majorA)],
             [(minorA, minorA)],
@@ -260,12 +260,12 @@ def alleles(sP, sC, k):
 for k in range(statsP.shape[0]):
     CNT = verify(statsP[k], k)
     if  CNT !=  N*2:
-        print >>sys.stderr, k, statsP[k], CNT, "!=", N*2, parents
+        print(k, statsP[k], CNT, "!=", N*2, parents, file=sys.stderr)
 
 hdb_stat = open('STAT/'+chunkN+'-stat.stat', 'wb')           
 np.save(hdb_stat, np.vstack((statsP,statsC)))
 hdb_stat.close()
 
-print >>sys.stderr, "Done"
+print("Done", file=sys.stderr)
 
     

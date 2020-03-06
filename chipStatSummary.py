@@ -29,7 +29,7 @@ HW = hw_test(MM_N,Mm_N,mm_N)
 """
 
 if len(sys.argv) < 5:
-    print "Usage: chipStatSummary.py  <statSummary.stat file> <chip.map file>> <number of families> [<agre pos file>]"
+    print("Usage: chipStatSummary.py  <statSummary.stat file> <chip.map file>> <number of families> [<agre pos file>]")
     sys.exit(1)
 
 summaryFn = sys.argv[1]
@@ -37,15 +37,15 @@ mapFn = sys.argv[2]
 sscPosFn = sys.argv[3]
 famN=int(sys.argv[4])
 
-print >>sys.stderr, summaryFn
-print >>sys.stderr,  mapFn
-print >>sys.stderr, sscPosFn
-print >>sys.stderr, famN
+print(summaryFn, file=sys.stderr)
+print(mapFn, file=sys.stderr)
+print(sscPosFn, file=sys.stderr)
+print(famN, file=sys.stderr)
 
 agre = False
 if len(sys.argv) >5:
     agrePosFn = sys.argv[5]
-    print >>sys.stderr, agrePosFn
+    print(agrePosFn, file=sys.stderr)
     agre = True
     
 with open(summaryFn, 'rb') as F:
@@ -71,7 +71,7 @@ with open(mapFn, 'r') as f:
         snpMap.append(cs)
         snpDict[(ch,p)] += 1
         n +=1
-print >>sys.stderr, "Read chip.map", time() - st
+print("Read chip.map", time() - st, file=sys.stderr)
 
 sscPos = {}
 bases=list('ACGT0')
@@ -88,7 +88,7 @@ with open(sscPosFn, 'r') as f:
 
         sscPos[(cs[0],cs[1])] = ''.join([x[0] for x in cnt])
 
-print >>sys.stderr, "Read ssc positions", time() - st
+print("Read ssc positions", time() - st, file=sys.stderr)
 
 if agre:
     agrePos = {}
@@ -106,7 +106,7 @@ if agre:
 
             agrePos[(cs[0],cs[1])] = ''.join([x[0] for x in cnt])
 
-    print >>sys.stderr, "Read agre positions", time() - st
+    print("Read agre positions", time() - st, file=sys.stderr)
 
 MAP = [[x[0], x[1], x[3], x[4]] for x in snpMap]
 mapLen = len(MAP)
@@ -121,7 +121,7 @@ def alleles(sP, sC, k):
     basesP = [item for sublist in sP for item in sublist]
     c = {x:sum([sP[y]*2 if (x,x) == y else sP[y]
                 for y in sP if x in y]) for x in basesP}
-    d = sorted(c.items(), key=lambda x: x[1], reverse=True)
+    d = sorted(list(c.items()), key=lambda x: x[1], reverse=True)
     d = [x for x in d if x[0] != '0']
     if len(d) ==0:
         return ['0','0',N*2,0,0,N*2,0,0,N*4,0,0,0,0,0,0,0,0,0,0]
@@ -137,7 +137,7 @@ def alleles(sP, sC, k):
         basesC = [item for sublist in sC for item in sublist]        
         c = {x:sum([sC[y]*2 if (x,x) == y else sC[y] for y in sC if x in y])
              for x in basesC}
-        d = sorted(c.items(), key=lambda x: x[1], reverse=True)
+        d = sorted(list(c.items()), key=lambda x: x[1], reverse=True)
         #print >>sys.stderr, '\t'.join(map(str,[MAP[k][0],MAP[k][2],
         #                                 'parents', sP, 'children', sC, d]))
         d = [x for x in d if x[0] != '0']
@@ -145,7 +145,7 @@ def alleles(sP, sC, k):
         if len(d) > 1:
             minorA = d[1][0]
         if len(d) > 2:
-            print >>sys.stderr, "Strange", d
+            print("Strange", d, file=sys.stderr)
     
     keys = [[(majorA, majorA)],
             [(minorA, minorA)],
@@ -192,7 +192,7 @@ statsC = stats[1]
 for k in range(statsP.shape[0]):
     CNT = verify(statsP[k], k)
     if  CNT !=  N*2:
-        print >>sys.stderr, k, statsP[k], CNT, "!=", N*2, parents
+        print(k, statsP[k], CNT, "!=", N*2, parents, file=sys.stderr)
 
 def rejection(sscAls, inSSC, ALS, ch, pos, agreAls="", inAGRE=False, agre=False):
 
@@ -213,7 +213,7 @@ def rejection(sscAls, inSSC, ALS, ch, pos, agreAls="", inAGRE=False, agre=False)
                      and sscA != sscAcomp and not indel) else 'no'
     
     if flip == 'yes' and inSSC and sscBiallelic and not indel:
-        print >>sys.stderr, "flip", ch, pos, "in chip", chipA, "in ssc", sscA
+        print("flip", ch, pos, "in chip", chipA, "in ssc", sscA, file=sys.stderr)
 
     if agre:
         compatible = True if (inSSC 
@@ -234,10 +234,10 @@ def rejection(sscAls, inSSC, ALS, ch, pos, agreAls="", inAGRE=False, agre=False)
 
     if agre:
         if not compatible and not indel and sscBiallelic and  inSSC and inAGRE and agreBiallelic:
-            print >>sys.stderr, "not compatible", ch, pos, "in chip", chipA, "in ssc", sscA, "in agre", agreA
+            print("not compatible", ch, pos, "in chip", chipA, "in ssc", sscA, "in agre", agreA, file=sys.stderr)
     else:
         if not compatible and not indel and sscBiallelic and  inSSC:
-            print >>sys.stderr, "not compatible", ch, pos, "in chip", chipA, "in ssc", sscA
+            print("not compatible", ch, pos, "in chip", chipA, "in ssc", sscA, file=sys.stderr)
         
     reason = ""
     if indel:
@@ -269,10 +269,10 @@ out = []
 st = time()
 if agre:
     hdAgre='chrom varId pos refA sscAlleles agreAlleles majorA minorA MM_N Mm_N mm_N 00_N majorA_N minorA_N 0_N MM_parents Mm_parents mm_parents OO_parents majorA_parents minorA_parents O_parents percentCalled MAF HW_p inSSC inAGRE flip reject reason'.split(' ')
-    print '\t'.join(hdAgre)
+    print('\t'.join(hdAgre))
 else:
     hd='chrom varId pos refA sscAlleles majorA minorA MM_N Mm_N mm_N 00_N majorA_N minorA_N 0_N MM_parents Mm_parents mm_parents OO_parents majorA_parents minorA_parents O_parents percentCalled MAF HW_p inSSC flip reject reason'.split(' ')
-    print '\t'.join(hd)
+    print('\t'.join(hd))
 
 for k in range(statsP.shape[0]):
     out = MAP[k]
@@ -299,4 +299,4 @@ for k in range(statsP.shape[0]):
                          presentA, inAGRE, agre)
     else:
         out += rejection(present, inSSC, ALS, ch, p)
-    print '\t'.join(map(str,out))
+    print('\t'.join(map(str,out)))

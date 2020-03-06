@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import sys,os
 import numpy as np
-from itertools import izip
+
 from collections import defaultdict, Counter
 import pickle
 
 if len(sys.argv) < 6:
-    print "Usage: comparePeds.py <ped1> <ped2> <bim1> <bim2> <posFn>"
+    print("Usage: comparePeds.py <ped1> <ped2> <bim1> <bim2> <posFn>")
     exit()
 
 ped1Fn = sys.argv[1]
@@ -24,7 +24,7 @@ with open(posFn, 'r') as f:
 
 with open(bim1Fn, 'r') as f1, open(bim2Fn, 'r') as f2:
     i = 0
-    for l1,l2 in izip(f1,f2):
+    for l1,l2 in zip(f1,f2):
         assert (l1 and l2 or (not l1 and not l2))
         if not l1: break
         cs1 = l1.strip("\n\r").split("\t")
@@ -37,7 +37,7 @@ with open(bim1Fn, 'r') as f1, open(bim2Fn, 'r') as f2:
                 assert set([cs1[4],cs1[5]]) == set([cs2[4],cs2[5]])
             assert cs2[4] == refA[i] or cs2[5] == refA[i]
         except:
-            print >>sys.stderr, "bim alleles do not match", cs1, cs2
+            print("bim alleles do not match", cs1, cs2, file=sys.stderr)
         i += 1
 
 def T(x):
@@ -56,7 +56,7 @@ n = 0
 
 start = True
 with open(ped1Fn, 'r') as f1, open(ped2Fn, 'r') as f2:
-    for l1,l2 in izip(f1,f2):
+    for l1,l2 in zip(f1,f2):
         assert (l1 and l2 or (not l1 and not l2))
         if not l1: break
 
@@ -79,12 +79,12 @@ with open(ped1Fn, 'r') as f1, open(ped2Fn, 'r') as f2:
         n += 1
         #print n
         if n % 100 == 0:
-            print >>sys.stderr, "processed", n, "lines"
+            print("processed", n, "lines", file=sys.stderr)
         #    break
 
 h_cnt = np.zeros((4,4))
-hMap={x:y for x,y in zip('homR het homA 0'.split(' '), range(4))}
-hMapr = {y:x for x,y in hMap.items()}
+hMap={x:y for x,y in zip('homR het homA 0'.split(' '), list(range(4)))}
+hMapr = {y:x for x,y in list(hMap.items())}
 
 h_cnt=CNT.reshape((4,4))
 
@@ -93,8 +93,8 @@ S2 = np.sum(h_cnt, axis = 1)
 S = sum(S1)
 assert (S == sum(S2))
 
-print '\t'.join('* homR het homA 0 Sum'.split(' '))
+print('\t'.join('* homR het homA 0 Sum'.split(' ')))
 for k in range(4):
     out = [hMapr[k]] + list(h_cnt[k,:]) + [S2[k]]
-    print '\t'.join(map(str,out))
-print '\t'.join(map(str,['Sum'] + list(S1) + [S]))
+    print('\t'.join(map(str,out)))
+print('\t'.join(map(str,['Sum'] + list(S1) + [S])))

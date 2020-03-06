@@ -11,12 +11,12 @@ PSF.close()
 
 DT = genfromtxt(DIR + "/mastertable.txt", delimiter='\t',dtype=None,names=True, case_sensitive=True)
 
-print >>sys.stderr, "There are", len({R['sf_id'] for R in DT}), "families"
+print("There are", len({R['sf_id'] for R in DT}), "families", file=sys.stderr)
 
 rlC = Counter([R['role'] for R in DT])
 
-for rl,C in sorted(rlC.items(),key=lambda x: x[1]):
-    print >>sys.stderr, "%5d\t%s" % (C,rl)
+for rl,C in sorted(list(rlC.items()),key=lambda x: x[1]):
+    print("%5d\t%s" % (C,rl), file=sys.stderr)
 
 FMS = defaultdict(list)
 for R in DT:
@@ -35,14 +35,14 @@ def cleanF(RS):
            len(RS) > 2 and nUndiagnosed == 0 and nNoGenotype == 0
 
 
-cleanFMS = {fId:RS for fId,RS in FMS.items() if cleanF(RS)}
-print >>sys.stderr, "There are", len(cleanFMS), "clean families"
+cleanFMS = {fId:RS for fId,RS in list(FMS.items()) if cleanF(RS)}
+print("There are", len(cleanFMS), "clean families", file=sys.stderr)
 import pickle
 
 #sp_id	sf_id	father_id	mother_id	gender	asd_flag	role	age(year)	wes.CRAM	wes.GVCF	array.idat	array.signal_file
 HD = {v:i for i,v in enumerate("sp_id sf_id father_id mother_id gender asd_flag role".split(" "))}
 md = defaultdict()
-for fId, R in cleanFMS.items():
+for fId, R in list(cleanFMS.items()):
     for p in R:
         s=1
         pId = p[HD['sp_id']]
@@ -71,15 +71,15 @@ def classifyOKFam(RS):
     return tuple(au(pars) + au(prbs+sibs))
 
 okFmSum = defaultdict(dict)
-for fmI,RS  in cleanFMS.items():
+for fmI,RS  in list(cleanFMS.items()):
     okFmSum[classifyOKFam(RS)][fmI] = RS
 
 OF = open('cleanFamilyStats.txt','w')
 hcs = "nAffectedParents nUnaffctedParents nAfftedChildren nUnaffctedChildren numberOfFamilies".split(" ")
 #print "\t".join(hcs) 
 OF.write("\t".join(hcs) + "\n")
-for tp,c in sorted(okFmSum.items(),key=lambda x: len(x[1]),reverse=True):
-    cs = map(str,list(tp) + [len(c)])
+for tp,c in sorted(list(okFmSum.items()),key=lambda x: len(x[1]),reverse=True):
+    cs = list(map(str,list(tp) + [len(c)]))
     #print "\t".join(cs)
     OF.write("\t".join(cs) + "\n")
 OF.close()

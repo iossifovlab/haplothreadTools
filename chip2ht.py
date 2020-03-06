@@ -7,7 +7,7 @@ import h5py
 
 from GenomeAccess import openRef
 if len(sys.argv) < 3:
-    print "Usage: chip2HT.py <ped file> <bim file> [pedMap]" 
+    print("Usage: chip2HT.py <ped file> <bim file> [pedMap]") 
     sys.exit(1)
 
 """ 
@@ -26,7 +26,7 @@ pedFn = sys.argv[1]
 bimFn = sys.argv[2]
 chunkN = pedFn.split("/")[1].split(".")[0]
 
-print >>sys.stderr,  pedFn, bimFn, chunkN
+print(pedFn, bimFn, chunkN, file=sys.stderr)
 
 pMap = False
 #"""
@@ -211,7 +211,7 @@ def createHaploThreads(numP, numCh, GS):
                 K = [sorted([refM[x[0]],refM[x[1]]]) for x in gch]
                 K = ' '.join([x[0] + x[1] for x in K])
             except KeyError:
-                print >>sys.stderr, "k", k, "snpMap", ' '.join(snpMap[k]), "refM", refM, "gch", gch, "refA", refA, "altA", altA
+                print("k", k, "snpMap", ' '.join(snpMap[k]), "refM", refM, "gch", gch, "refA", refA, "altA", altA, file=sys.stderr)
                 res[ch].append(['d']*4)
                 continue
             if K in gn2ph:
@@ -230,7 +230,7 @@ class P():
     pass
 
 def processFam(fams):
-    for fid, fam in fams.items():
+    for fid, fam in list(fams.items()):
         mom = None
         dad = None
         if len(fam) <3:
@@ -289,7 +289,7 @@ FAM = {}
 global res
 def createHT(FAM, cur_fam):
     global res
-    print >>sys.stderr, "createing HT", cur_fam
+    print("createing HT", cur_fam, file=sys.stderr)
     res = createHaploThreads(len(members), len(members) - 2, GS)
     res1 = np.array(res).transpose()
     printHDB(res1,members)
@@ -312,7 +312,7 @@ with open(pedFn, 'r') as f:
                 GS = np.vstack(tuple([FAM[p.personId]['genotype'] for p in members]))
                 createHT(FAM, cur_fam)
             else:
-                print >>sys.stderr, "strange family", str(fams)
+                print("strange family", str(fams), file=sys.stderr)
             FAM = {}
             fams = defaultdict(list)
             persons = {}
@@ -338,8 +338,8 @@ if processFam(fams):
     GS = np.vstack(tuple([FAM[p.personId]['genotype'] for p in members]))
     createHT(FAM, cur_fam)
 else:
-    print >>sys.stderr, "strange family", str(fams)
+    print("strange family", str(fams), file=sys.stderr)
 
 outchip.close()
-print >>sys.stderr, "Done"
+print("Done", file=sys.stderr)
 

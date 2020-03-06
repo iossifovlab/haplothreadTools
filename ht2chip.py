@@ -6,7 +6,7 @@ import pickle
 
 
 if len(sys.argv) <4:
-    print "Usage: ht2chip.py <hdb> <original bim> <fms.pckl>"
+    print("Usage: ht2chip.py <hdb> <original bim> <fms.pckl>")
     exit(1)
 
 hdb = sys.argv[1]
@@ -28,13 +28,13 @@ ambiguous = {
     'GT':'K', 'TG':'K'
 }
 
-amb = {v:list(k) for k,v in ambiguous.items()}
+amb = {v:list(k) for k,v in list(ambiguous.items())}
 amb['d'] = ['0','0']
 amb['c'] = ['0','0']
 amb['o'] = ['0','0']
 amb['u'] = ['0','0']
 
-amb_k = amb.keys()
+amb_k = list(amb.keys())
 
 persons = defaultdict()
 
@@ -44,7 +44,7 @@ F.close()
 
 genM = {'M':'1', 'F':'2'}
 
-for fd in families.values():
+for fd in list(families.values()):
     for pd in fd.memberInOrder:
         fId = fd.familyId
         pId = pd.personId
@@ -65,7 +65,7 @@ pedOut = open(pedFn, 'w')
 def processFamily(family):
     global ALS
     global start
-    print >>sys.stderr, "processing family", family[0]['fId']
+    print("processing family", family[0]['fId'], file=sys.stderr)
     assert len(set([x['fId'] for x in family]))==1
     fId = family[0]['fId']
     assert set([len(x) for x in family]) == set([4])
@@ -144,7 +144,7 @@ with open(posFn, 'r') as f:
         cs = l.strip('\n\r').split('\t')
         cnt=defaultdict(int)
 
-        for k,v in ALS[i].items():
+        for k,v in list(ALS[i].items()):
             cnt[k] += v
 
         assert (('0' in cnt and len(cnt) < 4) 
@@ -156,7 +156,7 @@ with open(posFn, 'r') as f:
         else:
             if '0' in cnt:
                 del cnt['0']
-            als = sorted(cnt.items(), key=lambda x: x[1])
+            als = sorted(list(cnt.items()), key=lambda x: x[1])
         
             if len(als) == 1:
                 minorA = '0'

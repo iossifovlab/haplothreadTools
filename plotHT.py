@@ -6,7 +6,7 @@ from matchHT import loadHDB, compareHT
 import sys
 
 if len(sys.argv) < 2:
-    print "Usage: statsHDB.py <HDB>"
+    print("Usage: statsHDB.py <HDB>")
     sys.exit(1) 
 
 HDB = sys.argv[1]

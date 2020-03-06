@@ -50,14 +50,14 @@ for l in PF:
     CNT[(fmId, prId, mId, gender, aff)] = int(cs[-1])
 PF.close()
 
-prb_m = [v for k,v in CNT.items() if k[4] == '1' and k[3] == '1']
-prb_f = [v for k,v in CNT.items() if k[4] == '1' and k[3] == '2']
-sib_m = [v for k,v in CNT.items() if k[4] == '1' and k[3] == '1' and k[2] == '0']
-sib_f = [v for k,v in CNT.items() if k[4] == '1' and k[3] == '2' and k[2] == '0']
+prb_m = [v for k,v in list(CNT.items()) if k[4] == '1' and k[3] == '1']
+prb_f = [v for k,v in list(CNT.items()) if k[4] == '1' and k[3] == '2']
+sib_m = [v for k,v in list(CNT.items()) if k[4] == '1' and k[3] == '1' and k[2] == '0']
+sib_f = [v for k,v in list(CNT.items()) if k[4] == '1' and k[3] == '2' and k[2] == '0']
 
-prb_M = [v for k,v in CNT.items() if k[4] == '1' and k[3] == '1' and k[0] in M]
-prb_Q = [v for k,v in CNT.items() if k[4] == '1' and k[3] == '1' and k[0] in Q]
-prb_Qf = [v for k,v in CNT.items() if k[4] == '1' and k[3] == '2' and k[0] in Q]
+prb_M = [v for k,v in list(CNT.items()) if k[4] == '1' and k[3] == '1' and k[0] in M]
+prb_Q = [v for k,v in list(CNT.items()) if k[4] == '1' and k[3] == '1' and k[0] in Q]
+prb_Qf = [v for k,v in list(CNT.items()) if k[4] == '1' and k[3] == '2' and k[0] in Q]
 
 
 

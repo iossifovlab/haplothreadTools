@@ -9,7 +9,7 @@ pos= [defaultdict(list), defaultdict(list)]
 
 # put smaller file first in the arguments
 if len(sys.argv) < 4:
-    print "Usage: createCommonPos.py <file1> <file2> <common file>"
+    print("Usage: createCommonPos.py <file1> <file2> <common file>")
     sys.exit(1)
 
 fns = sys.argv[1:3]
@@ -25,7 +25,7 @@ with open(fns[0], 'r') as f:
         pos[0][tuple(cs[:2])]=[n,alleles]
         n += 1
 
-    print >>sys.stderr, "read pos file", fns[0]
+    print("read pos file", fns[0], file=sys.stderr)
 
 with open(fns[1], 'r') as f:
     HD = {v:i for i,v in enumerate(f.readline().strip('\n\r').split('\t'))}
@@ -35,12 +35,12 @@ with open(fns[1], 'r') as f:
         pos[1][tuple(cs[:2])]=cs
         n += 1
         
-    print >>sys.stderr, "read pos file", fns[1]
+    print("read pos file", fns[1], file=sys.stderr)
 
 # output only positions the have the same chr, pos and the same alleles
 # we do not want introduce third allele
 n = 0
-for k,v in sorted(pos[0].items(), key=lambda x: x[1][0]):
+for k,v in sorted(list(pos[0].items()), key=lambda x: x[1][0]):
     if k in pos[1]:
         s1 = pos[0][k][1]
         s2 = set([i for i,v in enumerate(pos[1][k][3:]) if int(v) > 0])
@@ -48,9 +48,9 @@ for k,v in sorted(pos[0].items(), key=lambda x: x[1][0]):
             out.write('\t'.join(k) + '\n')
     n += 1
     if n % 10000==0:
-        print >>sys.stderr, "Processed %d lines" % n
+        print("Processed %d lines" % n, file=sys.stderr)
 
 out.close()
-print >>sys.stderr, "Done"
+print("Done", file=sys.stderr)
 
 

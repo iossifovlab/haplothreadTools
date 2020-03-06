@@ -51,7 +51,7 @@ for l in PF:
     H = sum([D[k] for k in hom])
     F.write('\t'.join(map(str,[D[k] for k in keys] + [H])) +"\n")
     if n % 1000 == 0:
-        print >>sys.stderr, "n", n
+        print("n", n, file=sys.stderr)
     n += 1
     #if n == 10:
     #    break

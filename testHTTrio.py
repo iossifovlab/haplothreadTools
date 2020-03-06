@@ -6,7 +6,7 @@ from metaData import *
 from collections import Counter
 
 if len(sys.argv) < 4:
-    print "Usage: testHTTrio.py <htTrioFile> <pedTrioFile> <htTrioPosFn>"
+    print("Usage: testHTTrio.py <htTrioFile> <pedTrioFile> <htTrioPosFn>")
     sys.exit(1) 
 
 htTrioFn = sys.argv[1] 
@@ -123,13 +123,13 @@ for h in 'MT MNT FT FNT'.split(' '):
 compare = {}
 for h in 'MT MNT FT FNT'.split(' '):
     compare[h] = np.array([int(x[0] == x[1]) for x in zip(htTrio[h], pedTrio[h])] )
-    print 100.*sum(compare[h])/len(compare[h])
+    print(100.*sum(compare[h])/len(compare[h]))
 
 idx = np.where(compare['MT'] == 0)[0]
 
-print Counter(htTrio['MT'][idx])
-print Counter(pedTrio['MT'][idx])
+print(Counter(htTrio['MT'][idx]))
+print(Counter(pedTrio['MT'][idx]))
 
 a = [[htTrio['MT'][k], pedTrio['MT'][k], pedTrio['GN'][k]] for k in idx]
 for x in a:
-    print ' '.join(x[:2] + list(x[2]))
+    print(' '.join(x[:2] + list(x[2])))

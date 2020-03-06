@@ -9,7 +9,7 @@ import pysam,gzip
 import scipy.stats as sci
 
 if len(sys.argv) < 3:
-    print "Usage: snvNucFam2HDB.py <snvNucFamDir> <new HDB>  [chromosome]"
+    print("Usage: snvNucFam2HDB.py <snvNucFamDir> <new HDB>  [chromosome]")
     sys.exit(1)
 snvNucFamDir,HDB = sys.argv[1:3]
 
@@ -17,7 +17,7 @@ ch = None
 if len(sys.argv) > 3:
    ch = sys.argv[3] 
 
-print "snvNucFamDir:", snvNucFamDir, "HDB:", HDB, "ch:", ch
+print("snvNucFamDir:", snvNucFamDir, "HDB:", HDB, "ch:", ch)
 
 # genStatsF = sys.stdin
 
@@ -34,7 +34,7 @@ elif os.path.isfile(snvNucFamDir + "/quadGenStat.txt") and os.path.isfile(snvNuc
     genStatsF = open(snvNucFamDir + "/quadGenStat.txt")
     baseCntStatsF = open(snvNucFamDir + "/baseCntStat.txt")
 else:
-    print "No quadGenStat file found"
+    print("No quadGenStat file found")
     sys.exit(1)
 
 F = open(snvNucFamDir + '/mainNucFamDir/params.txt', 'r')
@@ -58,16 +58,16 @@ if os.path.isfile(snvNucFamDir + "/../../snvNucFamAnnot/" + familyId + "/snvDeno
         if not cs[0] == ch:
             continue
         elif not cs[1] in strongDN:
-            strongDN[cs[1]] = map(int,bestState.split('/')[1].split(' '))
+            strongDN[cs[1]] = list(map(int,bestState.split('/')[1].split(' ')))
     SDF.close()
 else:
-    print "not file " + snvNucFamDir + "/../../snvNucFamAnnot/" + familyId + "/snvDenovoSW.txt found"
+    print("not file " + snvNucFamDir + "/../../snvNucFamAnnot/" + familyId + "/snvDenovoSW.txt found")
     exit(1)
 
 #for k in strongDN:
 #    print k, strongDN[k]
 
-print "familyId:", familyId, "personIds:", personIds
+print("familyId:", familyId, "personIds:", personIds)
 
 numP = len(personIds)
 numCh = numP-2
@@ -153,7 +153,7 @@ else:
     specialPos = open(snvNucFamDir + "/log/specialPos-" + ch +".txt", 'w')
 
 M = {0:'A',1:'C',2:'G', 3:'T'}
-RM = {v:k for k,v in M.items()}
+RM = {v:k for k,v in list(M.items())}
 
 '''
 def processSpecial(chr, pos, refA, depth, altA, bSt, numP, numCh, cs, csCnt,e=0.01):
@@ -239,8 +239,8 @@ def genotype(cnt):
 
 def genotypeTrio(cnt,refA,):
     amap = {0:'A',1:'C',2:'G', 3:'T'}
-    RM = {v:k for k,v in amap.items()}
-    cnt = [map(float, k) for k in cnt]
+    RM = {v:k for k,v in list(amap.items())}
+    cnt = [list(map(float, k)) for k in cnt]
     D = [sum(k) for k in cnt]
     if min(D) < 15:
         return 'low'
@@ -262,7 +262,7 @@ def genotypeTrio(cnt,refA,):
         return 'conf'
 
 def processSpecial(chr, pos, refA, depth, altA, bSt, numP, numCh, cs, csCnt,e=0.01):
-    cnts = [map(float, k.split(',')) for k in csCnt[2:]]
+    cnts = [list(map(float, k.split(','))) for k in csCnt[2:]]
     mD = sum(cnts[0])
     fD = sum(cnts[1])
     gens = []
@@ -310,7 +310,7 @@ def printHaploThreads(numP, numCh):
                 #    ht = ['u']*4
                 #    res[chId].append(ht)
                 else:
-                    print >>sys.stderr, 'Strange genotype ', gens[chId]
+                    print('Strange genotype ', gens[chId], file=sys.stderr)
                 n=n+1
                 #if n >1000:
                 #    break

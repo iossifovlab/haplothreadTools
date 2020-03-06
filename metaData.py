@@ -9,13 +9,13 @@ RLDR = {"mother":"mom", "father":"dad", "prb":"prb", "sibling":"sib"}
 
 class MetaData:
     def buildFromNucFams(md):
-        for fd in md.nucFams.values():
+        for fd in list(md.nucFams.values()):
             for pd in fd.memberInOrder:
                 pd.familyId = fd.familyId
-        md.persons = {pd.personId:pd for fd in md.nucFams.values() for pd in fd.memberInOrder}
+        md.persons = {pd.personId:pd for fd in list(md.nucFams.values()) for pd in fd.memberInOrder}
 
         md.trios = {}
-        for fid,fd in md.nucFams.items():
+        for fid,fd in list(md.nucFams.items()):
             
             for pd in fd.memberInOrder[2:]:
                 t = Family()
@@ -83,7 +83,7 @@ def _parse_PTCD(MDFN):
         md.nucFams[fmId].memberInOrder.append(p)
 
     rlOrd = {rl:rli for rli,rl in enumerate("mom dad prb sib".split())}
-    for fd in md.nucFams.values():
+    for fd in list(md.nucFams.values()):
        fd.memberInOrder = sorted(fd.memberInOrder,key=lambda p: rlOrd[p.role]) 
 
     md.buildFromNucFams()
@@ -180,7 +180,7 @@ def _parse_AGRE(MDFN):
         assert ind.indId not in individuals
         individuals[ind.indId] = ind
 
-    for ind in individuals.values():
+    for ind in list(individuals.values()):
         if ind.atts['mom'] != "0" and ind.atts['mom'] in individuals:
             ind.mother = individuals[ind.atts['mom']]
         if ind.atts['dad'] != "0" and ind.atts['dad'] in individuals:
@@ -188,7 +188,7 @@ def _parse_AGRE(MDFN):
 
 
 
-    for ind in individuals.values():
+    for ind in list(individuals.values()):
         if not (ind.father and ind.mother):
             continue
         ncFId = ind.mother.indId + "_" + ind.father.indId
@@ -305,7 +305,7 @@ def _parse_AGRE2(MDFN):
         assert ind.indId not in individuals
         individuals[ind.indId] = ind
 
-    for ind in individuals.values():
+    for ind in list(individuals.values()):
         if ind.atts['mom'] != "0" and ind.atts['mom'] in individuals:
             ind.mother = individuals[ind.atts['mom']]
         if ind.atts['dad'] != "0" and ind.atts['dad'] in individuals:
@@ -313,7 +313,7 @@ def _parse_AGRE2(MDFN):
 
 
 
-    for ind in individuals.values():
+    for ind in list(individuals.values()):
         if not (ind.father and ind.mother):
             continue
         ncFId = ind.mother.indId + "_" + ind.father.indId
@@ -426,7 +426,7 @@ def _parse_SSC2(MDFN):
         assert ind.indId not in individuals
         individuals[ind.indId] = ind
     #print len(individuals)
-    for ind in individuals.values():
+    for ind in list(individuals.values()):
         if ind.atts['mom'] != "0" and ind.atts['mom'] in individuals:
             ind.mother = individuals[ind.atts['mom']]
         if ind.atts['dad'] != "0" and ind.atts['dad'] in individuals:
@@ -434,7 +434,7 @@ def _parse_SSC2(MDFN):
 
 
 
-    for ind in individuals.values():
+    for ind in list(individuals.values()):
         if not (ind.father and ind.mother):
             continue
         ncFId = ind.mother.indId.split('.')[0]
@@ -497,9 +497,9 @@ def _parse_SSC2(MDFN):
 
 
 def smIdPersonIdbamF(md):
-    print '\t'.join('sampleId personId bamF'.split(' '))
+    print('\t'.join('sampleId personId bamF'.split(' ')))
     for n in md.persons:
-        print '\t'.join([ md.persons[n].smId, md.persons[n].personId, md.persons[n].bamF ] )
+        print('\t'.join([ md.persons[n].smId, md.persons[n].personId, md.persons[n].bamF ] ))
 
 def addZygosity(md):
     individuals = {}
@@ -513,7 +513,7 @@ def addZygosity(md):
     for ln,l in enumerate(CF):
         cs = l.strip("\n").split("\t",-1)
         assert( len(cs) == len(cD) )
-        r = dict(zip(cD,cs))
+        r = dict(list(zip(cD,cs)))
         individuals[r['Individual Code']] = r
     CF.close()
     
@@ -522,7 +522,7 @@ def addZygosity(md):
     for ln,l in enumerate(CF):
         cs = l.strip("\n").split("\t",-1)
         assert( len(cs) == len(cD) )
-        r = dict(zip(cD,cs))
+        r = dict(list(zip(cD,cs)))
         if r['indId'] not in individuals:
             if r['zygosity'] == '0':
                 individuals[r['indId']] = {'Zygosity Type':' '}
@@ -532,7 +532,7 @@ def addZygosity(md):
     
     persons = md.persons
     
-    for p,v in persons.items():
+    for p,v in list(persons.items()):
         if p in individuals:
             v.atts['Zygosity Type'] = individuals[p]['Zygosity Type']
         else:

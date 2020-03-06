@@ -12,14 +12,14 @@ import sys
 from time import time
 
 if len(sys.argv) < 2:
-    print "Usage: statsHDB.py <HDB>"
+    print("Usage: statsHDB.py <HDB>")
     sys.exit(1) 
 
 HDB = sys.argv[1]
 
 expectedCodes = "ACGTMRWSYKcdou"
 MAP = {v:i for i,v in enumerate(expectedCodes)}
-RMAP = {v:k for k,v in MAP.items()}
+RMAP = {v:k for k,v in list(MAP.items())}
 ambiguous = {
     'AC':'M', 'CA':'M', 
     'AG':'R', 'GA':'R', 
@@ -61,7 +61,7 @@ for x in 'ACGTMRWSYK':
 for x in "ACGTMRWSYK":
     mask[(x,x)] = 0
 
-for k,v in ambiguous.items():
+for k,v in list(ambiguous.items()):
     mask[(k[0],v)] = 0
     mask[(k[1],v)] = 0
     mask[(v,k[0])] = 0
@@ -102,7 +102,7 @@ N = 680658
 
 HT, pos = loadHDB(HDB)
 for n in sorted(np.random.randint(1,N, 100)):
-    print '\t'.join(map(str,[22, pos[n], pos[n]]))
+    print('\t'.join(map(str,[22, pos[n], pos[n]])))
 
 
 

@@ -8,13 +8,13 @@ import scipy.stats as sc
 from hw import HW1
 
 if len(sys.argv) < 3:
-    print "Usage: chipStat.py <ped file> <map file>"
+    print("Usage: chipStat.py <ped file> <map file>")
     exit()
 
 pedFn = sys.argv[1]
-print >>sys.stderr,  pedFn
+print(pedFn, file=sys.stderr)
 mapFn = sys.argv[2]
-print >>sys.stderr,  mapFn
+print(mapFn, file=sys.stderr)
 #sscPosFn = sys.argv[3]
 #print >>sys.stderr, sscPosFn
 #chunkN = pedFn.split("/")[1].split(".")[0]
@@ -57,7 +57,7 @@ cur_fam = None
 FAM = {}
 famN = 0
 CompM = {x:y for x,y in zip(list('ACGT0ID'),list('TGCA0ID'))}
-chrM = {'chr'+str(v):i+1 for i,v in enumerate(range(1,23) + ['X'])}
+chrM = {'chr'+str(v):i+1 for i,v in enumerate(list(range(1,23)) + ['X'])}
 snpDict = defaultdict()
 st = time()
 with open(mapFn, 'r') as f:
@@ -69,7 +69,7 @@ with open(mapFn, 'r') as f:
         snpMap.append(cs)
         snpDict[(ch,p)] = 1
         n +=1
-print >>sys.stderr, "Read chip.map", time() - st
+print("Read chip.map", time() - st, file=sys.stderr)
 
 MAP = [[x[0], x[3]] for x in snpMap]
 mapLen = len(MAP)
@@ -91,7 +91,7 @@ class P():
     pass
 
 def processFam(fams):
-    for fid, fam in fams.items():
+    for fid, fam in list(fams.items()):
         mom = None
         dade = None
         if len(fam) <3:
@@ -163,11 +163,11 @@ with open(pedFn, 'r') as f:
         #print >>sys.stderr, fId, pId
         if cur_fam and fId != cur_fam:
             #print 'A'
-            print >>sys.stderr, 'processing family', cur_fam
+            print('processing family', cur_fam, file=sys.stderr)
             if processFam(fams):
                 statFam(fams)
             else:
-                print >>sys.stderr, "strange family", str(fams)
+                print("strange family", str(fams), file=sys.stderr)
             FAM = {}
             fams = defaultdict(list)
         #print 'B'
@@ -180,11 +180,11 @@ with open(pedFn, 'r') as f:
         #    break
 
 # process the last family
-print >>sys.stderr, 'last family', cur_fam
+print('last family', cur_fam, file=sys.stderr)
 if processFam(fams):
     statFam(fams)
 else:
-    print sys.stderr, "strange family", str(fams)
+    print(sys.stderr, "strange family", str(fams))
 
 statsP = GGP
 statsC = GGC
@@ -194,7 +194,7 @@ N = parents
 for k in range(statsP.shape[0]):
     cnt = sum(statsP[k])
     if  cnt !=  N:
-        print >>sys.stderr, k, statsP[k], cnt, "!=", N, parents
+        print(k, statsP[k], cnt, "!=", N, parents, file=sys.stderr)
 
 
 #hdb_stat = open('STAT/'+chunkN+'-statNew.npz', 'wb')
@@ -202,6 +202,6 @@ hdb_stat = open('chip-statSummary.npz', 'wb')
 np.savez(hdb_stat, ALLMap=ALLMap, statsP=statsP, statsC=statsC)
 hdb_stat.close()
 
-print >>sys.stderr, "Done"
+print("Done", file=sys.stderr)
 
     

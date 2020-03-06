@@ -2,15 +2,15 @@
 import sys
 
 if len(sys.argv) < 4:
-    print "Usage: createBim.py <map file> <chip summary file>"
+    print("Usage: createBim.py <map file> <chip summary file>")
     exit(1)
 
 mapFn = sys.argv[1]
 allelesFn = sys.argv[2]
 outFn = sys.argv[3]
-print >>sys.stderr, mapFn
-print >>sys.stderr, allelesFn
-print >>sys.stderr, outFn
+print(mapFn, file=sys.stderr)
+print(allelesFn, file=sys.stderr)
+print(outFn, file=sys.stderr)
 
 n = 0
 out=open(outFn, 'w')

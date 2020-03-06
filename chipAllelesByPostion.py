@@ -7,12 +7,12 @@ import pickle
 import resource
 
 if len(sys.argv) < 2:
-    print "Usage: chipStat.py <ped file>" 
+    print("Usage: chipStat.py <ped file>") 
     exit()
 
 
 pedFn = sys.argv[1]
-print >>sys.stderr,  pedFn
+print(pedFn, file=sys.stderr)
 
 
 alleles = None
@@ -25,7 +25,7 @@ with open(pedFn, 'r') as f:
         if alleles:
             assert L == len(alleles)
         else:
-            alleles = [defaultdict(int) for p in xrange(L)]
+            alleles = [defaultdict(int) for p in range(L)]
 
         for i,g in enumerate(G):
             p = i/2
@@ -33,8 +33,8 @@ with open(pedFn, 'r') as f:
 
 for pd in alleles:
     cs = []
-    for a,n in sorted(pd.items(),key=lambda x:-x[1]):
+    for a,n in sorted(list(pd.items()),key=lambda x:-x[1]):
         if a != '0':
             cs += [a]
     # if '0' not in pd: cs += ['0','0']
-    print "\t".join(cs)
+    print("\t".join(cs))

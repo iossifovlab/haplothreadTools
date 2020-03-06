@@ -6,7 +6,7 @@ import numpy as np
 from time import time
 
 if len(sys.argv) < 2:
-    print "Usage: hdbPos2h5.py <HDB>"
+    print("Usage: hdbPos2h5.py <HDB>")
 
 HDB=sys.argv[1]
 
@@ -31,7 +31,7 @@ with open(fin, 'r') as f:
         #if k > 10:
         #    break
 
-print time() - t
+print(time() - t)
 
 t = time()
 k += 1
@@ -41,7 +41,7 @@ hf.create_dataset('pos', data=data_pos[:k])
 hf.create_dataset('cnt', data=data_cnt[:k])
 hf.create_dataset('refA', data=data_refA[:k])
 hf.close()
-print time() - t
+print(time() - t)
 
 """
 t = time()

@@ -4,7 +4,7 @@ from collections import defaultdict
 import pickle
 
 if len(sys.argv) < 3:
-    print "Usage: createPedMap.py <ped file> <fms.pckl file for SSC2380>"
+    print("Usage: createPedMap.py <ped file> <fms.pckl file for SSC2380>")
     exit(1)
 
 pedFn=sys.argv[1]
@@ -16,7 +16,7 @@ F = open(fmsFn)
 families,badFamilies = pickle.load(F)
 F.close()
 
-for fd in families.values():
+for fd in list(families.values()):
     for pd in fd.memberInOrder:
         smId = os.path.basename(pd.atts['bamF']).split(".")[0]
         assert smId not in md
@@ -41,8 +41,8 @@ with open(pedFn, 'r') as f:
             famId = out['fam']
             out['gender']=gMap[out['gender']]
             out['affectStatus'] = '1' if out['role'] in ['mom','dad'] else aMap[out['role']]
-            print '\t'.join([out[k] for k in H[:-1] 
-                             + ['affectStatus']]+cs[6:])
+            print('\t'.join([out[k] for k in H[:-1] 
+                             + ['affectStatus']]+cs[6:]))
     
 
  

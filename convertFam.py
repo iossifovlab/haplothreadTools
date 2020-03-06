@@ -2,13 +2,13 @@
 import sys, os
 from collections import defaultdict
 if len(sys.argv) < 3:
-    print "Usage: convertFam.py <old fam> <helper file>"
+    print("Usage: convertFam.py <old fam> <helper file>")
     exit()
 
 famFn = sys.argv[1]
-print >>sys.stderr,  famFn
+print(famFn, file=sys.stderr)
 helpFn = sys.argv[2]
-print >>sys.stderr,  helpFn
+print(helpFn, file=sys.stderr)
 
 fam = []
 n = 0
@@ -35,5 +35,5 @@ for i in range(len(fam)):
     out=fam[i]
     for k in range(1,4):
        out[k] = helper[out[k]]
-    print '\t'.join(out)
+    print('\t'.join(out))
     

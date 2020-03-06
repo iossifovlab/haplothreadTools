@@ -4,15 +4,15 @@ import numpy as np
 import sys
 
 if len(sys.argv) < 4:
-    print "Usage: statsHDB.py <HDB> <numPos> <numHT>"
+    print("Usage: statsHDB.py <HDB> <numPos> <numHT>")
     sys.exit(1) 
 
 HDB = sys.argv[1]
 numPos = int(sys.argv[2])
 numHT = int(sys.argv[3])
 N = 100
-X = np.random.choice(range(numPos), N, replace=False)
-Y = np.random.choice(range(numHT), N, replace=False)
+X = np.random.choice(list(range(numPos)), N, replace=False)
+Y = np.random.choice(list(range(numHT)), N, replace=False)
 assert (len(set(X)) == N)
 assert (len(set(Y)) == N)
 id = np.argsort(Y)
@@ -40,7 +40,7 @@ def createRP(HDB, X, Y):
             break
     HF.close()
 
-    pos2ht = { k[3]:k for k in HT.keys()}
+    pos2ht = { k[3]:k for k in list(HT.keys())}
     X = sorted(X)
     HF =  open(HDB + "-pos.txt")
     HF.readline()
@@ -61,7 +61,7 @@ createRP(HDB, X, Y)
 
 
 for k in sorted(HT):
-    print '\t'.join(map(str, list(k) + HT[k]))
+    print('\t'.join(map(str, list(k) + HT[k])))
 
 
 

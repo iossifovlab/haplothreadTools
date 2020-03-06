@@ -2,7 +2,7 @@
 import os,sys
 
 if len(sys.argv) <4:
-    print "Usage: chunkPed.py <ped file> <fam list> <chunk number> <famId length>"
+    print("Usage: chunkPed.py <ped file> <fam list> <chunk number> <famId length>")
     sys.exit(1)
 
     

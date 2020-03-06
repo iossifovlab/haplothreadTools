@@ -2,7 +2,7 @@
 import sys, os
 
 if len(sys.argv) < 5:
-    print "Usage: keepCleanFams.py <ped in> <fam ids> <ped out> <id length>"  
+    print("Usage: keepCleanFams.py <ped in> <fam ids> <ped out> <id length>")  
     sys.exit(1)
 
 inFn=sys.argv[1]
