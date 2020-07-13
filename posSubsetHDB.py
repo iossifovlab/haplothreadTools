@@ -298,10 +298,18 @@ def posChrPosFileSubset(IHDB, OHDB, chrPosFile):
     else:
         print("Cannot open file", IHDB+"-hpth.txt*", file=sys.stderr)
 
-    OH.write(IH.readline())
+    l = IH.readline()
+    type_l = type(l)
+    if type_l == bytes:
+        OH.write(l.decode('utf8'))
+    else:
+        OH.write(l)
 
     for l in IH:
-        cs = l.strip("\n\r").split("\t")
+        if type_l:
+            cs = l.decode('utf8').strip("\n\r").split("\t")
+        else:
+            cs = l.strip("\n\r").split("\t")
         assert len(cs)==4
         cs[3] = "".join([cs[3][k] for k in indx])
         OH.write("\t".join(cs)+"\n")
