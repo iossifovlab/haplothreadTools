@@ -6,8 +6,14 @@ from glob import glob
 from time import time
 import numpy as np
 import scipy.stats as sc
-from hw import HW1
+from hw import *
 from GenomeAccess import openRef
+import json
+
+with open("config.json") as f:
+    config=json.load(f)
+
+par1par2=config["parameters"]["par1"]+"," + config["parameters"]["par2"]
 
 
 """
@@ -49,7 +55,7 @@ if len(sys.argv) >5:
     agre = True
     
 with open(summaryFn, 'rb') as F:
-    stats = np.load(F)
+    stats = np.load(F,allow_pickle=True)
 
 N = famN*2
 parents = N
@@ -57,8 +63,7 @@ parents = N
 snpMap = []
 
 compM = {x:y for x,y in zip(list('ACGT0ID'),list('TGCA0ID'))}
-chrM = {'chr'+str(v):i+1 for i,v in enumerate(range(1,23))}
-chroms = ['chr' + str(i) for i in range(1,23)]
+chroms = ['chr' + str(i) for i in range(1,24)]
 snpDict = defaultdict(int)
 
 st = time()
@@ -66,7 +71,7 @@ with open(mapFn, 'r') as f:
     n = 0
     for l in f:
         cs = l.strip('\n\r').split('\t')
-        ch = 'chr'+cs[0]
+        ch = 'chr' +cs[0]
         p = cs[3]
         snpMap.append(cs)
         snpDict[(ch,p)] += 1
@@ -111,20 +116,22 @@ if agre:
 MAP = [[x[0], x[1], x[3], x[4]] for x in snpMap]
 mapLen = len(MAP)
 
+
 def verify(sP, k):
     basesP = [item for sublist in sP for item in sublist]
     c = {x:sum([sP[y]*2 if (x,x) == y else sP[y]
                 for y in sP if x in y]) for x in basesP}
     return sum(c.values())
 
-def alleles(sP, sC, k):
+def alleles(sPF, sPM, sC, k):
+    sP =  sPF + sPM
     basesP = [item for sublist in sP for item in sublist]
     c = {x:sum([sP[y]*2 if (x,x) == y else sP[y]
                 for y in sP if x in y]) for x in basesP}
     d = sorted(list(c.items()), key=lambda x: x[1], reverse=True)
     d = [x for x in d if x[0] != '0']
     if len(d) ==0:
-        return ['0','0',N*2,0,0,N*2,0,0,N*4,0,0,0,0,0,0,0,0,0,0]
+        return ['0', '0', 0, 0, 0, N, 0, 0, N, 0, 0, 0, N, 0, 0, 0, N, 0,0,N, 0,0,0]
 
     majorA = d[0][0]
     
@@ -138,7 +145,7 @@ def alleles(sP, sC, k):
         c = {x:sum([sC[y]*2 if (x,x) == y else sC[y] for y in sC if x in y])
              for x in basesC}
         d = sorted(list(c.items()), key=lambda x: x[1], reverse=True)
-        #print >>sys.stderr, '\t'.join(map(str,[MAP[k][0],MAP[k][2],
+        #print >>sys.stderr, '\t'.join(map(str,[MAP[k][0],MAP[k][1],
         #                                 'parents', sP, 'children', sC, d]))
         d = [x for x in d if x[0] != '0']
         
@@ -151,15 +158,22 @@ def alleles(sP, sC, k):
             [(minorA, minorA)],
             [(majorA, minorA), (minorA, majorA)],
             [('0','0')]]
+    ### *_NF  for dad and *_NM for mom
+    MM_NF, mm_NF, Mm_NF, OO_NF = [sum([sPF[i] for i in k if i in sPF]) for k in keys]
+    #print >>sys.stderr, majorA, minorA, MM_NF, mm_NF, Mm_NF, OO_NF
+    MM_NM, mm_NM, Mm_NM, OO_NM = [sum([sPM[i] for i in k if i in sPM]) for k in keys]
+    #print >>sys.stderr, majorA, minorA, MM_NM, mm_NM, Mm_NM, OO_NM
+    MM_NC, mm_NC, Mm_NC, OO_NC = [sum([sC[i] for i in k if i in sC]) for k in keys]    
+    OO_N = OO_NF + OO_NM
+    MM_N = MM_NF + MM_NM
+    Mm_N = Mm_NF + Mm_NM
+    mm_N = mm_NF + mm_NM
 
-    MM_N, mm_N, Mm_N, OO_N = [sum([sP[i] for i in k]) for k in keys]
-    MM_NC, mm_NC, Mm_NC, OO_NC = [sum([sC[i] for i in k]) for k in keys]
     MM_NT = MM_N + MM_NC
     mm_NT = mm_N + mm_NC
     Mm_NT = Mm_N + Mm_NC
     OO_NT = OO_N + OO_NC
 
-    #print >>sys.stderr, majorA, minorA, MM_N, mm_N, Mm_N, OO_N
     if minorA == majorA:
         mm_N = 0
         Mm_N = 0
@@ -172,34 +186,54 @@ def alleles(sP, sC, k):
 
     percentCalled = '%.2f' % (100.0*(majorA_NT + minorA_NT)/(majorA_NT + minorA_NT + O_NT)) if majorA_NT + minorA_NT + O_NT > 0 else '0.00'
 
+
     if majorA == minorA  or sum(HW1(MM_N, Mm_N,mm_N)==0):
         p = 1.0
     else:
-        hw, p = sc.chisquare(np.array([MM_N, Mm_N,mm_N]), f_exp=HW1(MM_N, Mm_N,mm_N), ddof=1)
-        p = '%.5f' % p
+        """
+        if (MAP[k][0] == '23' and not isPseudoAutosomalX( MAP[k][2], par1par2 )):
+            #print (pos, "A", file=sys.stderr)
+            hw, p = sc.chisquare(np.array([MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM]),
+                                   f_exp=HW_X(MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM), ddof=3)
+            print(MAP[k][2], MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM, hw, p, file=sys.stderr)
+        else:
+            #print (, "B", file=sys.stderr)
+            hw, p = sc.chisquare(np.array([MM_N, Mm_N,mm_N]), f_exp=HW1(MM_N, Mm_N,mm_N), ddof=1)
+        """
+        if ((MAP[k][0] == '23' or MAP[k][0] == 'chrX') and not isPseudoAutosomalX( MAP[k][2], par1par2 )):
+            #print (pos, "A", file=sys.stderr)
+            p, eCnt = pval_count_X([MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM])
+            #print(MAP[k][2], MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM, hw, p, file=sys.stderr)
+        else:
+            #print (, "B", file=sys.stderr)
+            p, eCnt = pval_count_autosome([MM_N, Mm_N,mm_N])
+
+    p = '%.5f' % p
+
     indel_N = N*4 - (majorA_N + minorA_N + O_N)
 
     if majorA != minorA:
         MAF = '%.4f' % (1.0*minorA_N / (majorA_N + minorA_N))
-        return [majorA, minorA, MM_NT, Mm_NT, mm_NT, OO_NT, majorA_NT, minorA_NT, O_NT, MM_N, Mm_N, mm_N, OO_N, majorA_N, minorA_N, O_N, percentCalled,MAF,p]
+        return [majorA, minorA, MM_NT, Mm_NT, mm_NT, OO_NT,  majorA_NT, minorA_NT, O_NT, MM_NF, Mm_NF, mm_NF, OO_NF, MM_NM, Mm_NM, mm_NM, OO_NM, majorA_N, minorA_N, O_N, percentCalled,MAF,p]
     else:
         MAF = 0.0
-    return [majorA, '', MM_NT, Mm_NT, mm_NT, OO_NT, majorA_NT, minorA_NT, O_NT, MM_N, Mm_N, mm_N, OO_N, majorA_N, minorA_N, O_N, percentCalled,MAF,p]
+    return [majorA, '', MM_NT, Mm_NT, mm_NT, OO_NT,  majorA_NT, minorA_NT, O_NT, MM_NF, Mm_NF, mm_NF, OO_NF, MM_NF, Mm_NF, mm_NF, OO_NF,  majorA_N, minorA_N, O_N, percentCalled,MAF,p]
 
-statsP = stats[0]
-statsC = stats[1]
+statsPF = stats[0]
+statsPM = stats[1]
+statsC  = stats[2]
 
-for k in range(statsP.shape[0]):
-    CNT = verify(statsP[k], k)
+for k in range(statsPF.shape[0]):
+    CNT = verify(statsPF[k]+statsPM[k], k)
     if  CNT !=  N*2:
-        print(k, statsP[k], CNT, "!=", N*2, parents, file=sys.stderr)
+        print(k, statsPF[k]+statsPM[k], CNT, "!=", N*2, parents, file=sys.stderr)
 
 def rejection(sscAls, inSSC, ALS, ch, pos, agreAls="", inAGRE=False, agre=False):
 
     sscA = set(list(sscAls))
     sscAcomp = set([compM[x] for x in sscA])
     chipA = set(list(ALS['majorA']+ALS['minorA']))
-    chipAcomp = set([compM[x] for x in chipA])
+    chipAcomp = set([compM[x] for x in chipA ])
     indel = ('I' in chipA or 'D' in chipA or
              len(ALS['majorA']) > 1 or len(ALS['minorA']) >1)
     sscBiallelic = len(sscAls) == 2
@@ -244,8 +278,10 @@ def rejection(sscAls, inSSC, ALS, ch, pos, agreAls="", inAGRE=False, agre=False)
         reason += "indel;"
     if snpDict[(ch, pos)] > 1:
         reason += "multiple pos;"
+
     if float(ALS['HW_p']) < 0.00001:
         reason += "HW < 0.00001;"
+    
     if float(ALS['percentCalled']) < 95:
         reason += "percentCalled < 95;"
     if not inSSC:
@@ -268,13 +304,14 @@ def rejection(sscAls, inSSC, ALS, ch, pos, agreAls="", inAGRE=False, agre=False)
 out = []
 st = time()
 if agre:
-    hdAgre='chrom varId pos refA sscAlleles agreAlleles majorA minorA MM_N Mm_N mm_N 00_N majorA_N minorA_N 0_N MM_parents Mm_parents mm_parents OO_parents majorA_parents minorA_parents O_parents percentCalled MAF HW_p inSSC inAGRE flip reject reason'.split(' ')
+    hdAgre='chrom varId pos refA sscAlleles agreAlleles majorA minorA MM_N Mm_N mm_N 00_N majorA_N minorA_N 0_N MM_dad Mm_dad mm_dad OO_dad MM_mom Mm_mom mm_mom OO_mom majorA_parents minorA_parents O_parents percentCalled MAF HW_p inSSC inAGRE flip reject reason'.split(' ')
     print('\t'.join(hdAgre))
 else:
-    hd='chrom varId pos refA sscAlleles majorA minorA MM_N Mm_N mm_N 00_N majorA_N minorA_N 0_N MM_parents Mm_parents mm_parents OO_parents majorA_parents minorA_parents O_parents percentCalled MAF HW_p inSSC flip reject reason'.split(' ')
+    hd='chrom varId pos refA sscAlleles majorA minorA MM_N Mm_N mm_N 00_N majorA_N minorA_N 0_N MM_dad Mm_dad mm_dad OO_dad MM_mom Mm_mom mm_mom OO_mom majorA_parents minorA_parents O_parents percentCalled MAF HW_p inSSC flip reject reason'.split(' ')
     print('\t'.join(hd))
 
-for k in range(statsP.shape[0]):
+
+for k in range(statsPF.shape[0]):
     out = MAP[k]
     ch = 'chr'+MAP[k][0]
     p = MAP[k][2]
@@ -283,17 +320,17 @@ for k in range(statsP.shape[0]):
     if agre:
         presentA = agrePos[(ch, p)] if (ch,p) in agrePos else ""
         out += [presentA]
-    als = alleles(statsP[k],statsC[k], k)
+    als = alleles(statsPF[k],statsPM[k],statsC[k], k)
     if agre:
         ALS = {k:v for k,v in zip(hdAgre[6:-5], als)}
     else:
         ALS = {k:v for k,v in zip(hd[5:-4], als)}        
     out += als
-    inSSC = True if ('chr'+MAP[k][0], MAP[k][2]) in sscPos else False
+    inSSC = ('chr'+MAP[k][0], MAP[k][2]) in sscPos
     out += [inSSC]
-    if agre:
-        inAGRE = True if ('chr'+MAP[k][0], MAP[k][2]) in agrePos else False
-        out += [inAGRE]
+    #if agre:
+    inAGRE = agre and ('chr'+MAP[k][0], MAP[k][2]) in agrePos
+    out += [inAGRE]
     if agre:
         out += rejection(present, inSSC, ALS, ch, p,
                          presentA, inAGRE, agre)
