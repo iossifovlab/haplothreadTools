@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 import sys, os
 
+SPARK = "SPARK" in os.environ["PROJECT_DIR"]
+if SPARK:
+    famN = 9
+else:
+    famN = 5
 quads = []
 with open('quadIds.txt', 'r') as f:
     for l in f:
@@ -10,7 +15,7 @@ out=open('quads.ped', 'w')
 
 with open('joined.ped', 'r') as f:
     for l in f:
-        if l[:5] in quads:
+        if l[:famN] in quads:
             out.write(l)
 
 out.close()
