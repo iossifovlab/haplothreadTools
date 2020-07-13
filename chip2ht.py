@@ -4,10 +4,16 @@ from collections import defaultdict
 import sys, os
 import resource
 import h5py
+import json
 
-from GenomeAccess import openRef
+with open("config.json") as f:
+    config=json.load(f)
+
+par1par2=config["parameters"]["par1"]+"," + config["parameters"]["par2"]
+par = list(map(int, par1par2.split(",")))
+
 if len(sys.argv) < 3:
-    print("Usage: chip2HT.py <ped file> <bim file> [pedMap]") 
+    print("Usage: chip2HT.py <ped file> <bim file> [X] [pedMap]") 
     sys.exit(1)
 
 """ 
@@ -24,16 +30,19 @@ chip-sorted.bim is written when processing the first family
 
 pedFn = sys.argv[1]
 bimFn = sys.argv[2]
-chunkN = pedFn.split("/")[1].split(".")[0]
+X_flag = None
+if len(sys.argv) == 4:
+    X_flag = sys.argv[3]
+#chunkN = pedFn.split("/")[1].split(".")[0]
 
-print(pedFn, bimFn, chunkN, file=sys.stderr)
+#print(pedFn, bimFn, chunkN, file=sys.stderr)
 
 pMap = False
-#"""
+"""
 if len(sys.argv) >3:
     personFn = sys.argv[3]
     pMap=True
-#"""
+"""
 
 snpMap = []
 persons = {}
@@ -56,7 +65,7 @@ if pMap:
 
 CompM = {x:y for x,y in zip(list('ACGT0ID'),list('TGCA0ID'))}
 
-chrM = {'chr'+str(v):i+1 for i,v in enumerate(range(1,23))}
+chrM = {'chr'+str(v):i+1 for i,v in enumerate(range(1,24))}
 snpIdx = defaultdict(int)
 with open(bimFn, 'r') as f:
     n = 0
@@ -73,7 +82,9 @@ with open(bimFn, 'r') as f:
         n +=1
 
 mapIdx = sorted([[i,[chrM[snpMap[i][0]],int(snpMap[i][3])]]
-                 for i,v in enumerate(snpMap) if snpIdx[(snpMap[i][0],snpMap[i][3])] == 1], key=lambda x: x[1])
+                 for i,v in enumerate(snpMap) 
+                 if snpIdx[(snpMap[i][0],snpMap[i][3])] == 1], 
+                key=lambda x: x[1])
 
 bimOutFn = 'chip-sorted.bim'
 if not os.path.isfile(bimOutFn):
@@ -87,7 +98,8 @@ if not os.path.isfile(bimOutFn):
     writeOutBim(outbim)
 
 
-chip_file='NF-HDB/'+chunkN + '.ped'
+#chip_file='NF-HDB/'+famId + '.ped'
+chip_file='NF-HDB/'+pedFn.split('/')[1]
 outchip = open(chip_file, 'w')
 
 ambiguous = {
@@ -169,6 +181,14 @@ strange = {
 'cc cc ac':'d'
 }
 
+def inPAX(ch, x):
+    
+    hit = x >= par[0] and x < par[1] or x >= par[2] and x < par[3]
+    if not X_flag or (X_flag and hit):
+        return True
+    else: 
+        return False
+
 positions = defaultdict(list)
 def createHaploThreads(numP, numCh, GS):
     #print >>sys.stderr, "maxPos", maxPos
@@ -180,8 +200,8 @@ def createHaploThreads(numP, numCh, GS):
         k=m[0]
         #print >>sys.stderr, k
         ch = snpMap[k][0]
-        p = snpMap[k][3]
-
+        p = int(snpMap[k][3])
+        # print ('p', p, file=sys.stderr)
         # if we use real refA and do not do flip, we get tons of denovos
         #refA = snpMap[k][-1]
         
@@ -191,7 +211,8 @@ def createHaploThreads(numP, numCh, GS):
             altA = refA 
         else:
             altA = snpMap[k][4]
-            
+        #print('refA', refA, 'altA', altA, file=sys.stderr)
+    
         refM = {altA:'c', refA:'a', '0':'0'}
         rr = {'altBase':altA, 'refBase':refA}
 
@@ -201,29 +222,55 @@ def createHaploThreads(numP, numCh, GS):
         C = np.sum(counts, axis=0)
         positions[k]=[snpMap[k][0], snpMap[k][3], refA] + list(C[:4])
         
-        for ch in range(numCh):
-            # g[0] - dad, g[1] - mom, g[2+ch] - child
-            gch = [g[0],g[1],g[2+ch]]
-            if '0' in ''.join(g[0] + g[1] + g[2+ch]):
-                res[ch].append(['c']*4)
+        for chId in range(2,2+numCh):
+            # g[0] - mom, g[1] - dad, g[2+chId] - child
+            gch = [g[0],g[1],g[chId]]
+            if '0' in ''.join(g[0] + g[1] + g[chId]):
+                res[chId-2].append(['c']*4)
                 continue
             try:
                 K = [sorted([refM[x[0]],refM[x[1]]]) for x in gch]
-                K = ' '.join([x[0] + x[1] for x in K])
-            except KeyError:
-                print("k", k, "snpMap", ' '.join(snpMap[k]), "refM", refM, "gch", gch, "refA", refA, "altA", altA, file=sys.stderr)
-                res[ch].append(['d']*4)
-                continue
-            if K in gn2ph:
-                ht = gn2ph[K]
-                if 'E' in ht:
-                    b = ambiguous[gch[0][0]+gch[0][1]]
-                    res[ch].append([b]*4)
+                #print('K', K, file=sys.stderr)
+                if inPAX(ch, p):
+                    K = ' '.join([x[0] + x[1] for x in K])
+                    #print('autosome', 'K', K, file=sys.stderr)
+                elif nucFams[cur_fam][chId].gender == 'M':
+                    ### if dad or child are biallelic it is un error in genotyping
+                    if K[1][0] != K[1][1] or K[2][0] != K[2][1]:
+                        res[chId-2].append(['c']*4)
+                        #print ('bad genotype', file=sys.stderr)
+                        continue
+                    else:
+                        K = ' '.join([K[0][0] + K[0][1], K[1][0], K[2][0]])
+                        #print('X male', nucFams[cur_fam][chId].personId, 'K', K, file=sys.stderr)
                 else:
-                    ht = [rr[x] for x in ht]
-                    res[ch].append(ht)
-            else:
-                res[ch].append([strange[K]]*4)
+                    ### if dad is biallelic it is un error in genotyping
+                    if K[1][0] != K[1][1]:
+                        res[chId-2].append(['c']*4)
+                        #print ('bad genotype', file=sys.stderr)
+                        continue                    
+                    else:
+                        K = ' '.join([K[0][0] + K[0][1], K[1][0], K[2][0]+K[2][1]])
+                        #print('X female', nucFams[cur_fam][chId].personId, 'K', K, file=sys.stderr)
+                if K in gn2ph:
+                    ht = gn2ph[K]
+                    if 'E' in ht:
+                        b = ambiguous[gch[0][0]+gch[0][1]]
+                        res[chId-2].append([b]*4)
+                    else:
+                        ht = [rr[x] for x in ht]
+                        res[chId-2].append(ht)
+                        #print('K', K, nucFams[cur_fam][chId].personId, ht, file=sys.stderr)
+
+                else:
+                    res[chId-2].append([strange[K]]*4)
+            except KeyError:
+                print("k", k, "snpMap", ' '.join(snpMap[k]), 
+                      "refM", refM, "gch", gch, "refA", 
+                      refA, "altA", altA, file=sys.stderr)
+                res[chId-2].append(['d']*4)
+                continue
+
     return np.array(res)
 
 class P():
@@ -263,9 +310,9 @@ def processFam(fams):
 
 def printPOS(cur_fam, positions, mapIdx):
     pos_file='NF-HDB/'+cur_fam+'-pos.h5'
-    data_chr = np.array([positions[ip[0]][0] for ip in mapIdx])
+    data_chr = np.array([positions[ip[0]][0] for ip in mapIdx], dtype="S5")
     data_pos = np.array([positions[ip[0]][1] for ip in mapIdx], dtype=int)
-    data_refA = np.array([positions[ip[0]][2] for ip in mapIdx])
+    data_refA = np.array([positions[ip[0]][2] for ip in mapIdx], dtype="S1")
     data_cnt = np.array([positions[ip[0]][3:] for ip in mapIdx], dtype=int)
     hf = h5py.File(pos_file, 'w')
     hf.create_dataset('chr', data=data_chr)
@@ -281,7 +328,13 @@ def printHDB(res1, members):
     s = res1.shape
     for n in range(s[2]):
         for k in range(s[0]):
-            hdb_hpth.write( '\t'.join([cur_fam, members[2+n].personId, htIds[k]] + [''.join(res1[3-k,:,n])]) + '\n')
+            if X_flag:
+                if members[2+n].gender == 'M' and htIds[k] in ['FNT','MT','MNT']:
+                    hdb_hpth.write( '\t'.join([cur_fam, members[2+n].personId, htIds[k]] + [''.join(res1[3-k,:,n])]) + '\n')
+                elif members[2+n].gender == 'F' and htIds[k] in ['FT','MT','MNT']:
+                    hdb_hpth.write( '\t'.join([cur_fam, members[2+n].personId, htIds[k]] + [''.join(res1[3-k,:,n])]) + '\n')
+            else:
+                hdb_hpth.write( '\t'.join([cur_fam, members[2+n].personId, htIds[k]] + [''.join(res1[3-k,:,n])]) + '\n')
     hdb_hpth.close()
     
 members = []
@@ -300,6 +353,8 @@ n = 0
 fams = defaultdict(list)
 with open(pedFn, 'r') as f:
     for l in f:
+        #if not famId in l:
+        #    continue
         cs = l.strip('\n\r').split('\t')
         fId, pId, faId, moId, sex, aff = cs[:6]
         #print >>sys.stderr, fId, pId
@@ -323,11 +378,13 @@ with open(pedFn, 'r') as f:
             cur_fam=fId
         fams[fId].append([fId, pId, faId, moId, sex, aff])
         G = cs[6:]
+        #print('G', G, file=sys.stderr)
         Gfixed = [G[2*m[0]+i] for m in mapIdx for i in range(2)]
+        #print('Gfixed', Gfixed, file=sys.stderr)
         outchip.write('\t'.join(cs[:6] + Gfixed) + '\n')
         FAM[pId] = {'personId':pId,'genotype':np.array(G)}
         n +=1
-        #if n == 62:
+        #if n == 4:
         #    break
 
 # process the last family
