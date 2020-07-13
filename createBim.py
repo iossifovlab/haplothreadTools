@@ -19,11 +19,15 @@ AF = open(allelesFn)
 
 #chrom	pos	refA	sscAlleles	majorA	minorA	MM_N	Mm_N	mm_N00_N	majorA_N	minorA_N	0_N	MM_parents	Mm_parents	mm_parents	OO_parents	majorA_parents	minorA_parents	O_parents	percentCalled	MAF	HW_p	inSSC	flip
 
+### new
+#chrom	varId	pos	refA	sscAlleles	agreAlleles	majorA	minorA	MM_N	Mm_N	mm_N	00_N	majorA_N	minorA_N	0_N	MM_dad	Mm_dad	mm_dad	OO_dad	MM_mom	Mm_mom	mm_mom	OO_mom	majorA_parents	minorA_parents	O_parents	percentCalled	MAF	HW_p	inSSC	inAGRE	flip	reject	reason
+
+
 HD = {v:i for i,v in 
       enumerate(AF.readline().strip('\n\rq').split('\t'))}
 
 compM = {x:y for x,y in zip(list('ACGT0ID'),list('TGCA0ID'))}
-chroms = ['chr' + str(i) for i in range(1,23)]
+chroms = ['chr' + str(i) for i in range(1,24)]
 
 while True:
     ml = MF.readline()
