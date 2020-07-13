@@ -46,5 +46,5 @@ S = DATA.shape
 FPOS = open(UHDB + '-pos.txt', 'w') 
 FPOS.write( '\t'.join('Chromosome Position RefAllele A C G T'.split(' ')) + '\n')
 for n in range(S[0]):
-    FPOS.write( '\t'.join(map(str, [ch[n], pos[n], refA[n]]+list(DATA[n,:]))) + '\n')
+    FPOS.write( '\t'.join(map(str, [ch[n].decode(), pos[n], refA[n].decode()]+list(DATA[n,:]))) + '\n')
 FPOS.close()
