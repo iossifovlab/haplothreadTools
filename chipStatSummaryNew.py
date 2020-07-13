@@ -28,18 +28,18 @@ MAF (minor allele frequency) = minorA_N / (majorA_N + minorA_N)
 HW = hw_test(MM_N,Mm_N,mm_N) 
 """
 
-if len(sys.argv) < 5:
-    print("Usage: chipStatSummary.py  <statSummary.stat file> <chip.map file>> <number of families> [<agre pos file>]")
+if len(sys.argv) < 4:
+    print("Usage: chipStatSummaryNew.py  <*.npz file> <chip.map file>> <number of families> [<agre pos file>]")
     sys.exit(1)
 
 summaryFn = sys.argv[1]
 mapFn = sys.argv[2]
-sscPosFn = sys.argv[3]
-famN=int(sys.argv[4])
+#sscPosFn = sys.argv[3]
+famN=int(sys.argv[3])
 
 print(summaryFn, file=sys.stderr)
 print(mapFn, file=sys.stderr)
-print(sscPosFn, file=sys.stderr)
+#print(sscPosFn, file=sys.stderr)
 print(famN, file=sys.stderr)
 
 agre = False
@@ -88,7 +88,7 @@ with open(sscPosFn, 'r') as f:
 print("Read ssc positions", time() - st, file=sys.stderr)
 
 with open(summaryFn, 'rb') as F:
-    stats = np.load(F)
+    stats = np.load(F, allow_pickle=True)
     statsPP = stats['statsP']
     statsCC = stats['statsC']
     ALLMap = stats['ALLMap']
