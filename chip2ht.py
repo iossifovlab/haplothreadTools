@@ -203,7 +203,7 @@ def createHaploThreads(numP, numCh, GS):
         p = int(snpMap[k][3])
         # print ('p', p, file=sys.stderr)
         # if we use real refA and do not do flip, we get tons of denovos
-        #refA = snpMap[k][-1]
+        # refA = snpMap[k][-1]
         
         # since we do not make flip, we use majorA as refA
         refA = snpMap[k][5]
@@ -230,10 +230,9 @@ def createHaploThreads(numP, numCh, GS):
                 continue
             try:
                 K = [sorted([refM[x[0]],refM[x[1]]]) for x in gch]
-                #print('K', K, file=sys.stderr)
+          
                 if inPAX(ch, p):
                     K = ' '.join([x[0] + x[1] for x in K])
-                    #print('autosome', 'K', K, file=sys.stderr)
                 elif nucFams[cur_fam][chId].gender == 'M':
                     ### if dad or child are biallelic it is un error in genotyping
                     if K[1][0] != K[1][1] or K[2][0] != K[2][1]:
@@ -242,7 +241,6 @@ def createHaploThreads(numP, numCh, GS):
                         continue
                     else:
                         K = ' '.join([K[0][0] + K[0][1], K[1][0], K[2][0]])
-                        #print('X male', nucFams[cur_fam][chId].personId, 'K', K, file=sys.stderr)
                 else:
                     ### if dad is biallelic it is un error in genotyping
                     if K[1][0] != K[1][1]:
@@ -251,7 +249,6 @@ def createHaploThreads(numP, numCh, GS):
                         continue                    
                     else:
                         K = ' '.join([K[0][0] + K[0][1], K[1][0], K[2][0]+K[2][1]])
-                        #print('X female', nucFams[cur_fam][chId].personId, 'K', K, file=sys.stderr)
                 if K in gn2ph:
                     ht = gn2ph[K]
                     if 'E' in ht:
@@ -260,8 +257,6 @@ def createHaploThreads(numP, numCh, GS):
                     else:
                         ht = [rr[x] for x in ht]
                         res[chId-2].append(ht)
-                        #print('K', K, nucFams[cur_fam][chId].personId, ht, file=sys.stderr)
-
                 else:
                     res[chId-2].append([strange[K]]*4)
             except KeyError:
@@ -330,11 +325,20 @@ def printHDB(res1, members):
         for k in range(s[0]):
             if X_flag:
                 if members[2+n].gender == 'M' and htIds[k] in ['FNT','MT','MNT']:
-                    hdb_hpth.write( '\t'.join([cur_fam, members[2+n].personId, htIds[k]] + [''.join(res1[3-k,:,n])]) + '\n')
+                    hdb_hpth.write( '\t'.join([cur_fam, 
+                                            members[2+n].personId, 
+                                            htIds[k]] + [''.join(res1[3-k,:,n])])
+                                            + '\n')
                 elif members[2+n].gender == 'F' and htIds[k] in ['FT','MT','MNT']:
-                    hdb_hpth.write( '\t'.join([cur_fam, members[2+n].personId, htIds[k]] + [''.join(res1[3-k,:,n])]) + '\n')
+                    hdb_hpth.write( '\t'.join([cur_fam, 
+                                            members[2+n].personId, 
+                                            htIds[k]] + [''.join(res1[3-k,:,n])])
+                                            + '\n')
             else:
-                hdb_hpth.write( '\t'.join([cur_fam, members[2+n].personId, htIds[k]] + [''.join(res1[3-k,:,n])]) + '\n')
+                hdb_hpth.write( '\t'.join([cur_fam, 
+                                           members[2+n].personId, 
+                                           htIds[k]] + [''.join(res1[3-k,:,n])])
+                                           + '\n')
     hdb_hpth.close()
     
 members = []
@@ -378,9 +382,7 @@ with open(pedFn, 'r') as f:
             cur_fam=fId
         fams[fId].append([fId, pId, faId, moId, sex, aff])
         G = cs[6:]
-        #print('G', G, file=sys.stderr)
         Gfixed = [G[2*m[0]+i] for m in mapIdx for i in range(2)]
-        #print('Gfixed', Gfixed, file=sys.stderr)
         outchip.write('\t'.join(cs[:6] + Gfixed) + '\n')
         FAM[pId] = {'personId':pId,'genotype':np.array(G)}
         n +=1
