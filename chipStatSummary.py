@@ -160,9 +160,9 @@ def alleles(sPF, sPM, sC, k):
             [('0','0')]]
     ### *_NF  for dad and *_NM for mom
     MM_NF, mm_NF, Mm_NF, OO_NF = [sum([sPF[i] for i in k if i in sPF]) for k in keys]
-    #print >>sys.stderr, majorA, minorA, MM_NF, mm_NF, Mm_NF, OO_NF
+
     MM_NM, mm_NM, Mm_NM, OO_NM = [sum([sPM[i] for i in k if i in sPM]) for k in keys]
-    #print >>sys.stderr, majorA, minorA, MM_NM, mm_NM, Mm_NM, OO_NM
+
     MM_NC, mm_NC, Mm_NC, OO_NC = [sum([sC[i] for i in k if i in sC]) for k in keys]    
     OO_N = OO_NF + OO_NM
     MM_N = MM_NF + MM_NM
@@ -190,22 +190,9 @@ def alleles(sPF, sPM, sC, k):
     if majorA == minorA  or sum(HW1(MM_N, Mm_N,mm_N)==0):
         p = 1.0
     else:
-        """
-        if (MAP[k][0] == '23' and not isPseudoAutosomalX( MAP[k][2], par1par2 )):
-            #print (pos, "A", file=sys.stderr)
-            hw, p = sc.chisquare(np.array([MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM]),
-                                   f_exp=HW_X(MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM), ddof=3)
-            print(MAP[k][2], MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM, hw, p, file=sys.stderr)
-        else:
-            #print (, "B", file=sys.stderr)
-            hw, p = sc.chisquare(np.array([MM_N, Mm_N,mm_N]), f_exp=HW1(MM_N, Mm_N,mm_N), ddof=1)
-        """
         if ((MAP[k][0] == '23' or MAP[k][0] == 'chrX') and not isPseudoAutosomalX( MAP[k][2], par1par2 )):
-            #print (pos, "A", file=sys.stderr)
             p, eCnt = pval_count_X([MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM])
-            #print(MAP[k][2], MM_NF, mm_NF, MM_NM, Mm_NM,mm_NM, hw, p, file=sys.stderr)
         else:
-            #print (, "B", file=sys.stderr)
             p, eCnt = pval_count_autosome([MM_N, Mm_N,mm_N])
 
     p = '%.5f' % p
