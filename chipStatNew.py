@@ -8,17 +8,14 @@ import scipy.stats as sc
 from hw import HW1
 
 if len(sys.argv) < 3:
-    print("Usage: chipStat.py <ped file> <map file>")
+    print("Usage: chipStatNew.py <ped file> <map file>")
     exit()
 
+print(sys.version, 
 pedFn = sys.argv[1]
 print(pedFn, file=sys.stderr)
 mapFn = sys.argv[2]
 print(mapFn, file=sys.stderr)
-#sscPosFn = sys.argv[3]
-#print >>sys.stderr, sscPosFn
-#chunkN = pedFn.split("/")[1].split(".")[0]
-#print >>sys.stderr,  chunkN
 
 """
 chr  
@@ -38,8 +35,6 @@ MAF (minor allele frequency) = minorA_N / (majorA_N + minorA_N)
 HW = hw_test(MM_N,Mm_N,mm_N) 
 """
 
-bases=list('ACGT0')
-
 n=-1
 global parents
 global children
@@ -55,9 +50,6 @@ Gmap={'1':'M', '2':'F', '0':'0'}
 S = {'mom':0,'dad':1, 'prb':2,'sib':3}
 cur_fam = None
 FAM = {}
-famN = 0
-CompM = {x:y for x,y in zip(list('ACGT0ID'),list('TGCA0ID'))}
-chrM = {'chr'+str(v):i+1 for i,v in enumerate(list(range(1,23)) + ['X'])}
 snpDict = defaultdict()
 st = time()
 with open(mapFn, 'r') as f:
@@ -74,8 +66,16 @@ print("Read chip.map", time() - st, file=sys.stderr)
 MAP = [[x[0], x[3]] for x in snpMap]
 mapLen = len(MAP)
 
-#GGP = np.array([Counter() for k in range(mapLen)])
-#GGC = np.array([Counter() for k in range(mapLen)])
+#
+# Since the chip has only two possible bases in each position,
+# all possible choices of counts can be represented by 5 element array
+# [#(b1 b1), #(b2 b2), #(b1 b2),  #(b2 b1), #(0 0)]
+# We do not know in advance which b1 or b2 is the major, 
+# so one of #(b1 b2) or #(b2 b1) may be zero.
+# In reality only one of (b1 b2) (b2 b1) is present in the ped file,
+# so really 4 element array suffies. We still have 5, but the index will 
+# start from 1.
+#
 
 GGP = np.zeros((mapLen,5), dtype=int)
 GGC = np.zeros((mapLen,5), dtype=int)
@@ -84,8 +84,6 @@ IDX = np.zeros((mapLen), dtype=int)
 ALLMap = np.array([defaultdict(int) for k in range(mapLen)])
 
 global start
-start = True
-positions = defaultdict(list)
 
 class P():
     pass
@@ -122,7 +120,13 @@ def processFam(fams):
         nucFams[fid] = sorted(nucFams[fid], key=lambda x: S[x.role])
     return True
 
+
 def CNT(k, A):
+    """ For each position k in the chip.map and genotype A=(a,b)
+    CNT(k, A) returnes the index in range(5) of the genotype A
+    for the position k. The first indext will be 1, for each new genotype
+    index is incremented by 1. Indeces are retained in the ALLMap.
+    """
     if A in ALLMap[k]:
         return ALLMap[k][A]
     else:
@@ -179,7 +183,7 @@ with open(pedFn, 'r') as f:
         #if n == 19:
         #    break
 
-# process the last family
+# process last family
 print('last family', cur_fam, file=sys.stderr)
 if processFam(fams):
     statFam(fams)
@@ -196,10 +200,8 @@ for k in range(statsP.shape[0]):
     if  cnt !=  N:
         print(k, statsP[k], cnt, "!=", N, parents, file=sys.stderr)
 
-
-#hdb_stat = open('STAT/'+chunkN+'-statNew.npz', 'wb')
 hdb_stat = open('chip-statSummary.npz', 'wb')
-np.savez(hdb_stat, ALLMap=ALLMap, statsP=statsP, statsC=statsC)
+np.savez(hdb_stat, parents=np.array(parents), ALLMap=ALLMap, statsP=statsP, statsC=statsC)
 hdb_stat.close()
 
 print("Done", file=sys.stderr)
