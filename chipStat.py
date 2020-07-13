@@ -6,10 +6,18 @@ import sys, os
 import resource
 import scipy.stats as sc
 from hw import HW1
+import json
+
+with open("config.json") as f:
+    config=json.load(f)
+
+par1par2=config["parameters"]["par1"]+"," + config["parameters"]["par2"]
+
 
 if len(sys.argv) < 3:
     print("Usage: chipStat.py <ped file> <map file>")
     exit()
+
 
 pedFn = sys.argv[1]
 print(pedFn, file=sys.stderr)
@@ -35,7 +43,7 @@ minorA_N = (2*mm_N + Mm_N)
 0_N      = (2*OO_N) 
 percentCalled = 100*(majorA_N + minorA_N)/(majorA_N + minorA_N + 0_N)  
 MAF (minor allele frequency) = minorA_N / (majorA_N + minorA_N) 
-HW = hw_test(MM_N,Mm_N,mm_N) 
+HW = hw_new_test(MM_NF,Mm_NF,mm_NF,MM_NM,Mm_NM,mm_NM) 
 """
 
 bases=list('ACGT0')
@@ -43,7 +51,8 @@ bases=list('ACGT0')
 n=-1
 global parents
 global children
-global GGP
+global GGPM
+global GGPF
 global GGC
 parents = 0
 children = 0
@@ -88,7 +97,8 @@ print >>sys.stderr, "Read ssc positions", time() - st
 
 MAP = [[x[0], x[3]] for x in snpMap]
 mapLen = len(MAP)
-GGP = np.array([Counter() for k in range(mapLen)])
+GGPM = np.array([Counter() for k in range(mapLen)])
+GGPF = np.array([Counter() for k in range(mapLen)])
 GGC = np.array([Counter() for k in range(mapLen)])
 
 global start
@@ -101,7 +111,7 @@ class P():
 def processFam(fams):
     for fid, fam in list(fams.items()):
         mom = None
-        dade = None
+        dad = None
         if len(fam) <3:
             return False
         for v in fam:
@@ -133,7 +143,8 @@ def processFam(fams):
 def statFam(fams):
     global parents
     global children
-    global GGP
+    global GGPM
+    global GGPF
     global GGC
     members = nucFams[cur_fam]
     for p in members:
@@ -141,9 +152,17 @@ def statFam(fams):
 
     for p in members[:2]:
         parents +=1
-        GGP += np.array([Counter([(FAM[p.personId]['genotype'][2*k],
+        if p.role == 'mom':
+            GGPM += np.array([Counter([(FAM[p.personId]['genotype'][2*k],
                                    FAM[p.personId]['genotype'][2*k+1])])
                  for k in range(mapLen)])
+        elif p.role == 'dad':
+            GGPF += np.array([Counter([(FAM[p.personId]['genotype'][2*k],
+                                   FAM[p.personId]['genotype'][2*k+1])])
+                 for k in range(mapLen)])
+        else:
+            print("parents has wrong role:", p.role, cur_fam, file=sys.stderr)
+            exit
 
     for p in members[2:]:
         children +=1
@@ -186,25 +205,28 @@ if processFam(fams):
 else:
     print(sys.stderr, "strange family", str(fams))
 
-statsP = GGP
+statsP = np.vstack((GGPF,GGPM))
 statsC = GGC
 
 N = parents
 
-def verify(sP, k):
+def verify(sPFM, k):
+    sP = sPFM[0] + sPFM[1]
     basesP = [item for sublist in sP for item in sublist]
     c = {x:sum([sP[y]*2 if (x,x) == y else sP[y]
                 for y in sP if x in y]) for x in basesP}
     return sum(c.values())
 
-def alleles(sP, sC, k):
+"""
+def alleles(sPFM, sC, k):
+    sP =  sPFM[0] + sPFM[1]
     basesP = [item for sublist in sP for item in sublist]
     c = {x:sum([sP[y]*2 if (x,x) == y else sP[y]
                 for y in sP if x in y]) for x in basesP}
     d = sorted(list(c.items()), key=lambda x: x[1], reverse=True)
     d = [x for x in d if x[0] != '0']
     if len(d) ==0:
-        return ['0', '0', N*2, 0, 0, N*2, 0, 0, N*4, 0,0,0]
+        return ['0', '0', N, 0, 0, N, 0, 0, N*2, 0, 0, N*4, 0,0,0]
 
     majorA = d[0][0]
     
@@ -232,30 +254,42 @@ def alleles(sP, sC, k):
             [(majorA, minorA), (minorA, majorA)],
             [('0','0')]]
 
-    MM_N, mm_N, Mm_N, OO_N = [sum([sP[i] for i in k]) for k in keys]
-    #print >>sys.stderr, majorA, minorA, MM_N, mm_N, Mm_N, OO_N
+    MM_NF, mm_NF, Mm_NF, OO_NF = [sum([sPFM[0][i] for i in k]) for k in keys]
+    #print >>sys.stderr, majorA, minorA, MM_NF, mm_NF, Mm_NF, OO_NF
+    MM_NM, mm_NM, Mm_NM, OO_NM = [sum([sPFM[1][i] for i in k]) for k in keys]
+    #print >>sys.stderr, majorA, minorA, MM_NM, mm_NM, Mm_NM, OO_NM
+
     if minorA == majorA:
         mm_N = 0
         Mm_N = 0
-    majorA_N = 2*MM_N + Mm_N
-    minorA_N = 2*mm_N + Mm_N
+    majorA_N = 2*(MM_NM + MM_NF) + Mm_NM +  Mm_NF
+    minorA_N = 2*(mm_NM+mm_NF) + Mm_NM + Mm_NF
     O_N = 2*OO_N
 
     percentCalled = '%.2f' % (100.0*(majorA_N + minorA_N)/(majorA_N + minorA_N + O_N)) if majorA_N + minorA_N + O_N > 0 else '0.00'
 
+
     if majorA == minorA  or sum(HW1(MM_N, Mm_N,mm_N)==0):
         p = 1.0
     else:
-        hw, p = sc.chisquare(np.array([MM_N, Mm_N,mm_N]), f_exp=HW1(MM_N, Mm_N,mm_N), ddof=1)
+        if (MAP[k][0] == '23' and not isPseudoAutosomalX( MAP[k][1], par1par2 )):
+        #print (pos, "A", file=sys.stderr)
+            p, eCnt = pval_count_X([MM_NM, Mm_NM,mm_NM, MM_NF, Mm_NF,mm_NF])
+        Else:
+            #print (, "B", file=sys.stderr)
+            p, eCnt = pval_count_autosome([MM_N, Mm_N,mm_N])
+            hw, p = sc.chisquare(np.array([MM_N, Mm_N,mm_N]), f_exp=HW1(MM_N, Mm_N,mm_N), ddof=1)
         p = '%.5f' % p
     indel_N = N*4 - (majorA_N + minorA_N + O_N)
 
     if majorA != minorA:
         MAF = '%.4f' % (1.0*minorA_N / (majorA_N + minorA_N))
-        return [majorA, minorA, MM_N, Mm_N, mm_N, OO_N, majorA_N, minorA_N, O_N, percentCalled,MAF,p]
+        return [majorA, minorA, MM_NF, Mm_NF, mm_NF, OO_NF, MM_NF, Mm_NF, mm_NF, OO_NF, MM_N, Mm_N, mm_N, OO_N, majorA_N, minorA_N, O_N, percentCalled,MAF,p]
     else:
         MAF = 0.0
-    return [majorA, '', MM_N, Mm_N, mm_N, OO_N, majorA_N, minorA_N, O_N, percentCalled,MAF,p]
+    return [majorA, '', MM_NF, Mm_NF, mm_NF, OO_NF, MM_NF, Mm_NF, mm_NF, OO_NF, MM_N, Mm_N, mm_N, OO_N, majorA_N, minorA_N, O_N, percentCalled,MAF,p]
+
+"""
 
 for k in range(statsP.shape[0]):
     CNT = verify(statsP[k], k)
