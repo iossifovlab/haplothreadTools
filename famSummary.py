@@ -4,12 +4,12 @@ import os,sys
 from collections import defaultdict, Counter
 from numpy import genfromtxt
 
-DIR = os.getenv('PROJECT_DIR')
-PSF = open(DIR+"/sp_ids_in_genotype_ped.txt")
+DIR = 'SPARK_Freeze_Three/'
+PSF = open(DIR+"array.genotype/sp_ids_in_genotype_ped.txt")
 spIdsInPed = {l.strip("\n\r") for l in PSF}
 PSF.close()
 
-DT = genfromtxt(DIR + "/mastertable.txt", delimiter='\t',dtype=None,names=True, case_sensitive=True)
+DT = genfromtxt(DIR + "SPARK.30K.Release.mastertable.20181105.txt", delimiter='\t',dtype=None,names=True, case_sensitive=True, encoding='ASCII')
 
 print("There are", len({R['sf_id'] for R in DT}), "families", file=sys.stderr)
 
@@ -37,26 +37,6 @@ def cleanF(RS):
 
 cleanFMS = {fId:RS for fId,RS in list(FMS.items()) if cleanF(RS)}
 print("There are", len(cleanFMS), "clean families", file=sys.stderr)
-import pickle
-
-#sp_id	sf_id	father_id	mother_id	gender	asd_flag	role	age(year)	wes.CRAM	wes.GVCF	array.idat	array.signal_file
-HD = {v:i for i,v in enumerate("sp_id sf_id father_id mother_id gender asd_flag role".split(" "))}
-md = defaultdict()
-for fId, R in list(cleanFMS.items()):
-    for p in R:
-        s=1
-        pId = p[HD['sp_id']]
-        assert pId not in md
-        dad = p[HD['father_id']]
-        mom = p[HD['mother_id']]
-        gender=p[HD['gender']]
-        asd_flag=p[HD['asd_flag']]
-        role=p[HD['role']]
-        md[pId] = {'fam':fId, 'indId':pId, 'dad': dad, 'mom':mom, 'gender':gender,
-                   'role':role, 'aff':asd_flag}
-
-with open('fms.pckl', 'wb') as f:
-    pickle.dump(md, f)
 
 def classifyOKFam(RS):
     pars = [R for R in RS if R['role'] in ['Mother','Father']]
@@ -84,26 +64,27 @@ for tp,c in sorted(list(okFmSum.items()),key=lambda x: len(x[1]),reverse=True):
     OF.write("\t".join(cs) + "\n")
 OF.close()
 
+def main():
+    quads = {f for f in cleanFMS if classifyOKFam(cleanFMS[f]) == (0,2,1,1)}
 
-quads = {f for f in cleanFMS if classifyOKFam(cleanFMS[f]) == (0,2,1,1)}
-#"""
-with open('quads.txt', 'w') as f:
-    for q in sorted(quads):
-        f.write(q+'\n')
-#"""
+    with open('quads.txt', 'w') as f:
+        for q in quads:
+            f.write(q+'\n')
 
-multiplex = {f for f in cleanFMS if classifyOKFam(cleanFMS[f])[0] == 0 and classifyOKFam(cleanFMS[f])[1] == 2 and classifyOKFam(cleanFMS[f])[2] > 1}
-#"""
-with open('multiplex.txt', 'w') as f:
-    for q in sorted(multiplex):
-        f.write(q+'\n')
-#"""
 
-trios = {f for f in cleanFMS if classifyOKFam(cleanFMS[f])[0] == 0 and classifyOKFam(cleanFMS[f])[1] == 2 and classifyOKFam(cleanFMS[f])[2] == 1 and classifyOKFam(cleanFMS[f])[3] == 0}
+    multiplex = {f for f in cleanFMS if classifyOKFam(cleanFMS[f])[0] == 0 and classifyOKFam(cleanFMS[f])[1] == 2 and classifyOKFam(cleanFMS[f])[2] > 1}
 
-#"""
-with open('trios.txt', 'w') as f:
-    for q in sorted(trios):
-        f.write(q+'\n')
+    with open('multiplex.txt', 'w') as f:
+        for q in multiplex:
+            f.write(q+'\n')
 
-#"""
+
+    trios = {f for f in cleanFMS if classifyOKFam(cleanFMS[f])[0] == 0 and classifyOKFam(cleanFMS[f])[1] == 2 and classifyOKFam(cleanFMS[f])[2] == 1 and classifyOKFam(cleanFMS[f])[3] == 0}
+
+
+    with open('trios.txt', 'w') as f:
+        for q in trios:
+            f.write(q+'\n')
+
+if __name__ == "__main__":
+	main()
